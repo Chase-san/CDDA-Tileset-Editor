@@ -418,10 +418,10 @@ public class AsciiEntry {
 				if (alpha==0){ 
 				continue;
 				}
-				//if pixel R/G/B not equal, do nothing
+				//if pixel R/G/B not equal, copy over unchanged
 				if (!((red==green)&&(green==blue))){ 
-				continue;
-				}
+				ColorTileGraphic.setRGB(x,y,pixel);
+				}else{
 				//if equal, assign it fg color RGB values divided by (256/R)
 				Color c = new Color(0,0,0, alpha);
 				if(red!=0){
@@ -433,6 +433,7 @@ public class AsciiEntry {
 				c = new Color(newred, newgreen, newblue, alpha);
 				}
 				ColorTileGraphic.setRGB(x, y, c.getRGB());
+				}
 				}
 			}
 			//apply to tile
