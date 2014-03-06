@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -52,6 +53,7 @@ import org.csdgn.cddatse.data.GFX;
 import org.csdgn.cddatse.data.InternalTile;
 import org.csdgn.cddatse.data.TileInfo;
 import org.csdgn.maru.io.EqualsFileFilter;
+import org.csdgn.maru.io.EndsWithFileFilter;
 import org.csdgn.maru.swing.ArrayListModel;
 import org.csdgn.maru.util.Tuple;
 
@@ -615,12 +617,41 @@ public class EditorFrame extends JFrame {
 
 		HashMap<String, AsciiEntry> entries = new HashMap<String, AsciiEntry>();
 		
-		
 		AsciiEntry.getAllAsciiTiles(jsonFolder, entries);
-
 		return entries;
 	}
+	
+	private BufferedImage getAsciiTileset() {
+			JFileChooser imageChooser = null;
+			AppToolkit.setFileChooserReadOnly(true);
+			imageChooser = new JFileChooser();
+			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
+			imageChooser.addChoosableFileFilter(filter);
+			imageChooser.setFileFilter(filter);
 
+		
+		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
+
+		if (imageChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+			return null;
+		}
+		
+		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
+
+		File file = imageChooser.getSelectedFile();
+		if (!file.exists()) {
+			return null;
+		}
+
+		try {
+			return ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 	private void doGenerateAsciiTiles(boolean withBG) {
 		HashMap<String, AsciiEntry> entries = getAsciiEntries();
 
@@ -628,6 +659,10 @@ public class EditorFrame extends JFrame {
 		
 		GFX gfx = GFX.instance;
 		
+		BufferedImage tilesToUse = getAsciiTileset();
+		if(tilesToUse == null) {
+			AppToolkit.showError(this, "Failed to load Tileset!");
+		return;}
 		TileInfo info = GFX.instance.getTileInfo();
 		BufferedImage bg = new BufferedImage(info.width,info.height,BufferedImage.TYPE_INT_RGB);
 		
@@ -645,7 +680,7 @@ public class EditorFrame extends JFrame {
 			if(tile.isImageless()) {
 				AsciiEntry e = entries.get(tile.id);
 				if(e != null) {
-					BufferedImage img = e.createAsciiTile(info.width, info.height);
+					BufferedImage img = e.createAsciiTile(info.width, info.height, tilesToUse);
 
 					gfx.images.add(img);
 					tile.image.first = img;
@@ -653,7 +688,7 @@ public class EditorFrame extends JFrame {
 						tile.image.second = bg;
 					
 					if(e.hasBrokenTile()) {
-						img = e.createBrokenAsciiTile(info.width, info.height);
+						img = e.createBrokenAsciiTile(info.width, info.height, tilesToUse);
 						gfx.images.add(img);
 						tile.broken = true;
 						tile.brokenImage.first = img;
