@@ -45,7 +45,7 @@ public class AsciiEntry {
 	new Color(255, 150, 150), 
 	new Color(0, 255, 0), 
 	new Color(0, 255, 0), 
-	new Color(255, 255, 0), 
+	new Color(190, 190, 0), 
 	new Color(100, 100, 255),
 	new Color(100, 100, 255),
 	new Color(255, 0, 255), 
@@ -141,16 +141,16 @@ public class AsciiEntry {
 
 	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
 		map.put("unknown", new AsciiEntry("unknown", "red", "?"));
-		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", "_"));
-		map.put("player_female", new AsciiEntry("player_female", "white_ltgray", "@"));
-		map.put("player_male", new AsciiEntry("player_male", "white_ltgray", "@"));
+		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", "_", false, true));
+		map.put("player_female", new AsciiEntry("player_female", "white", "@"));
+		map.put("player_male", new AsciiEntry("player_male", "white", "@"));
 		map.put("corpse", new AsciiEntry("corpse", "dkgray", "o"));
-		map.put("cursor", new AsciiEntry("cursor", "yellow", "O"));
-		map.put("animation_line", new AsciiEntry("animation_line", "yellow", "-"));
-		map.put("animation_hit", new AsciiEntry("animation_hit", "red", "x"));
+		map.put("cursor", new AsciiEntry("cursor", "yellow", "O", false, true));
+		map.put("animation_line", new AsciiEntry("animation_line", "yellow", "-", false, true));
+		map.put("animation_hit", new AsciiEntry("animation_hit", "red", "x", false, true));
 		map.put("footstep", new AsciiEntry("footstep", "yellow", "="));
 		map.put("explosion", new AsciiEntry("explosion", "red_yellow", "o"));
-		map.put("lighting_hidden", new AsciiEntry("lighting_hidden", "dkgray", "#"));
+		map.put("lighting_hidden", new AsciiEntry("lighting_hidden", "dkgray_black", "#"));
 		map.put("lighting_lowlight_light", new AsciiEntry("lighting_lowlight_light", "black", " "));
 		map.put("lighting_lowlight_dark", new AsciiEntry("lighting_lowlight_dark", "black", " "));
 		map.put("lighting_boomered_light", new AsciiEntry("lighting_boomered_light", "magenta_pink", "#"));
@@ -215,18 +215,58 @@ public class AsciiEntry {
 				// vp_
 				String id = obj.get("id").getAsString();
 				
-				if("vehicle_part".equalsIgnoreCase(obj.get("type").getAsString())) {
-					id = "vp_" + id;
-				}
-				
 				String symbol = obj.get("symbol").getAsString();
 				String color = obj.get("color").getAsString();
 
-				if(obj.has("broken_symbol") && obj.has("broken_color")) {
-					map.put(id, new AsciiEntry(id, color, symbol, obj.get("broken_color").getAsString(), obj.get("broken_symbol")
-							.getAsString()));
-				} else {
-					map.put(id, new AsciiEntry(id, color, symbol));
+				if("vehicle_part".equalsIgnoreCase(obj.get("type").getAsString())) {
+					id = "vp_" + id;
+					String flags = "";
+					if(obj.has("flags")) flags = obj.getAsJsonArray("flags").toString();
+					//symbol gets overridden based on which VP is it
+					boolean frame=false;
+					if(obj.has("location")){
+						if("structure".equalsIgnoreCase(obj.get("location").getAsString())){
+						frame=true;}
+						int tileID = -1;
+						//define tiles
+						//_nw - top left corner
+						if(id.endsWith("_nw")) tileID = (frame) ? 201 : 218;
+						//_ne - top right corner
+						if(id.endsWith("_ne")) tileID = (frame) ? 187 : 191;
+						//_sw - bottom left corner
+						if(id.endsWith("_sw")) tileID = (frame) ? 200 : 192;
+						//_se - bottom right corner
+						if(id.endsWith("_se")) tileID = (frame) ? 188 : 217;
+						//_vertical or _vertical_2 - vertical (duh)
+						if(id.endsWith("_vertical") || id.endsWith("_vertical_2")) tileID = (frame) ? 215 : 179;
+						//_horizontal or _horizontal_2 - horizontal (duuuh)
+						if(id.endsWith("_horizontal") || id.endsWith("_horizontal_2")) tileID = (frame) ? 216 : 196;
+						//_cross - internal cross
+						if(id.endsWith("_cross")) tileID = (frame) ? 206 : 197;
+						
+						//as a stopper of sorts, check for untouchable tiles here and set the ID back to -1 if it's needed
+						if(flags.indexOf("CARGO")>=0 || flags.indexOf("AISLE")>=0 || flags.indexOf("PROTRUSION")>=0){
+						tileID = -1;}
+						
+						if(tileID > 0) symbol = new String(new char[]{(char)tileID});
+					}
+				}
+				
+				//JOptionPane.showMessageDialog(null, symbol);
+
+				if(symbol.length() > 1){
+				//if((symbol=="LINE_XOXO") || (symbol=="LINE_OXOX")){
+				//going multitile
+				//in vanilla this is just the walls, so we can fudge it a little here
+					map.put(id, new AsciiEntry(id, color, "#", true, false));
+				}
+				else {
+					if(obj.has("broken_symbol") && obj.has("broken_color")) {
+						map.put(id, new AsciiEntry(id, color, symbol, obj.get("broken_color").getAsString(), obj.get("broken_symbol")
+								.getAsString()));
+					} else {
+						map.put(id, new AsciiEntry(id, color, symbol));
+					}
 				}
 			}
 			for(Map.Entry<String, JsonElement> entry : obj.entrySet()) {
@@ -242,10 +282,50 @@ public class AsciiEntry {
 	public final Color color;
 	public final String id;
 	public final char symbol;
+	public final boolean multitile;
+	public final boolean overlay;
 
+	
+	//custom constructor for setting multitile and overlay flags
+	public AsciiEntry(String id, String color, String symbol, boolean multitile, boolean overlay) {
+		this.id = id;
+		this.symbol = symbol.charAt(0);
+		this.multitile = multitile;
+		this.overlay = overlay;
+
+		Color fg = Color.WHITE;
+		Color bg = null;
+		String fgStr = color;
+		String bgStr = null;
+
+		if(color.contains("_")) {
+			String[] str = Strings.split(color, "_");
+			fgStr = str[0];
+			bgStr = str[1];
+		}
+
+		for(int i = 0; i < colors.length; ++i) {
+			if(colorStrings[i].equalsIgnoreCase(fgStr)) {
+				fg = colors[i];
+			}
+			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
+				bg = colors[i];
+			}
+		}
+
+		this.color = fg;
+		if(overlay){bgcolor=null;
+		}else{bgcolor = bg;}
+		brkn_color = null;
+		brkn_bgcolor = null;
+		broken_symbol = ' ';
+	}
+	
 	public AsciiEntry(String id, String color, String symbol) {
 		this.id = id;
 		this.symbol = symbol.charAt(0);
+		this.multitile = false;
+		this.overlay = false;
 
 		Color fg = Color.WHITE;
 		Color bg = null;
@@ -277,6 +357,8 @@ public class AsciiEntry {
 	public AsciiEntry(String id, String color, String symbol, String brknColor, String brknSymbol) {
 		this.id = id;
 		this.symbol = symbol.charAt(0);
+		this.multitile = false;
+		this.overlay = false;
 
 		Color fg = Color.WHITE;
 		Color bg = null;
@@ -329,6 +411,10 @@ public class AsciiEntry {
 	public BufferedImage createAsciiTile(int width, int height, BufferedImage tiles) {
 			
 		return createAsciiTile(width, height, new char[] { symbol }, color, bgcolor, tiles);
+	}
+
+	public BufferedImage createAsciiTile(int width, int height, int tileID, BufferedImage tiles) {
+		return createAsciiTile(width, height, new char[] { (char)tileID }, color, bgcolor, tiles);
 	}
 
 	private static BufferedImage createAsciiTile(int width, int height, char[] chr, Color fg, Color bg, BufferedImage tiles) {
@@ -461,6 +547,12 @@ public class AsciiEntry {
 
 	public boolean hasBrokenTile() {
 		return brkn_color != null;
+	}
+	public boolean isMultitile() {
+		return multitile;
+	}
+	public boolean isOverlay() {
+		return overlay;
 	}
 
 	@Override

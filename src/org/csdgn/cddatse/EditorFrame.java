@@ -695,9 +695,56 @@ public class EditorFrame extends JFrame {
 
 					gfx.images.add(img);
 					tile.image.first = img;
-					if(withBG)
+					if(withBG && !e.isOverlay())
 						tile.image.second = bg;
-					
+					if(e.isMultitile()) {
+						//let'sa go!
+						//center
+						//JOptionPane.showMessageDialog(null,e.id);
+						img=e.createAsciiTile(info.width, info.height, 197, tilesToUse);
+						gfx.images.add(img);
+						tile.center = true;
+						tile.centerImage.first = img;
+						if(withBG)
+							tile.centerImage.second = bg;
+						//corner
+						img=e.createAsciiTile(info.width, info.height, 218, tilesToUse);
+						gfx.images.add(img);
+						tile.corner = true;
+						tile.cornerImage.first = img;
+						if(withBG)
+							tile.cornerImage.second = bg;
+						//edge
+						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.edge = true;
+						tile.edgeImage.first = img;
+						if(withBG)
+							tile.edgeImage.second = bg;
+						//tConnection
+						img=e.createAsciiTile(info.width, info.height, 194, tilesToUse);
+						gfx.images.add(img);
+						tile.tConnection = true;
+						tile.tConnectionImage.first = img;
+						if(withBG)
+							tile.tConnectionImage.second = bg;
+						//end_piece
+						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.endPiece = true;
+						tile.endPieceImage.first = img;
+						if(withBG)
+							tile.endPieceImage.second = bg;
+						//unconnected
+						img=e.createAsciiTile(info.width, info.height, 254, tilesToUse);
+						gfx.images.add(img);
+						tile.unconnected = true;
+						tile.unconnectedImage.first = img;
+						if(withBG)
+							tile.unconnectedImage.second = bg;
+						
+					}
+					if(e.id.startsWith("vp_")) tile.rotates = true;
 					if(e.hasBrokenTile()) {
 						img = e.createBrokenAsciiTile(info.width, info.height, tilesToUse);
 						gfx.images.add(img);
