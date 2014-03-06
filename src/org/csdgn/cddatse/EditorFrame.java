@@ -628,6 +628,7 @@ public class EditorFrame extends JFrame {
 			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
 			imageChooser.addChoosableFileFilter(filter);
 			imageChooser.setFileFilter(filter);
+			imageChooser.setDialogTitle("Select ASCII tile page:");
 
 		
 		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
@@ -660,10 +661,20 @@ public class EditorFrame extends JFrame {
 		GFX gfx = GFX.instance;
 		
 		BufferedImage tilesToUse = getAsciiTileset();
-		if(tilesToUse == null) {
-			AppToolkit.showError(this, "Failed to load Tileset!");
-		return;}
 		TileInfo info = GFX.instance.getTileInfo();
+		
+		if(tilesToUse == null) {
+			int dialogBtn = JOptionPane.YES_NO_OPTION;
+			int tileCheckDlg = JOptionPane.showConfirmDialog(null,"No tilepage selected - would you like to generate font-based ASCII tiles instead?","Continue anyway?",dialogBtn);
+			if(tileCheckDlg == JOptionPane.NO_OPTION){
+			return;}
+		}
+		else{
+			if(tilesToUse.getWidth() != info.width*16 || tilesToUse.getHeight() != info.height*16) {
+				AppToolkit.showError(this, "Tilepage dimensions do not match loaded tileset! Must be "+String.valueOf(info.width*16)+"x"+String.valueOf(info.height*16)+" pixels.");
+			return;}
+		}
+
 		BufferedImage bg = new BufferedImage(info.width,info.height,BufferedImage.TYPE_INT_RGB);
 		
 		
