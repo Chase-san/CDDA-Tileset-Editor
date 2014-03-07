@@ -147,7 +147,7 @@ public class AsciiEntry {
 				if(a == 0) {
 					if(bgRGB == -1) continue;
 					image.setRGB(x, y, bgRGB); //transparency must not override back color
-					continue; //but we have nothing else to do in this loop then
+					continue;
 				}
 				srcRGB &= 0xFFFFFF;
 				
@@ -158,12 +158,12 @@ public class AsciiEntry {
 					//most CPUs eat integer math alive, so, let's use that
 					int r2 = fg.getRed() * r / 255;
 					int g2 = fg.getGreen() * r / 255;
-					int b2 = fg.getBlue() * r / 255; //this I get
+					int b2 = fg.getBlue() * r / 255;
 					
-					dstRGB = (r2 << 16) | (g2 << 8) | b2; //I have not a single idea what goes on here. Binary integer concatenation? Where's alpha?
+					dstRGB = (r2 << 16) | (g2 << 8) | b2;
 					//Just a little compositing
 					if(bgRGB != -1)
-						dstRGB = (int) ((long)dstRGB+bgRGB*(255-r)/255); //compositing back color and fore color without using alpha?
+						dstRGB = (int) ((long)dstRGB+bgRGB*(255-a)/255);
 					else if(srcRGB == 0)
 						a = 0;
 					
