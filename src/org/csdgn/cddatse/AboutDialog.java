@@ -80,7 +80,10 @@ public class AboutDialog extends JPanel {
 		textArea.setFocusable(false);
 		textArea.setEditable(false);
 		textArea.setPreferredSize(new Dimension(150,100));
-		textArea.setText("Copyright© 2014 Robert Maupin\nAll Rights Reserved.\n\nCreated because... there wasn't one.\n");
+		textArea.setText("Copyright© 2014 Robert Maupin\n"
+				+ "All Rights Reserved.\n\n"
+				+ "Created because... there wasn't one.\n\n"
+				+ "Special Thanks to Sean Mirrsen.");
 		add(textArea);
 	}
 	
