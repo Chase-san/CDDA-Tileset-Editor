@@ -118,60 +118,49 @@ public class AsciiEntry {
 		
 		Graphics2D gfx = generateTileGFX(image);
 		
-		// rectangle fill the background
-		if(bg != null) {
-			gfx.setColor(bg);
-			gfx.fillRect(0, 0, width, height);
-		}
-
-		BufferedImage tileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		// the tile ID is the codepage code of the character.
-		char cha = new String(chr).charAt(0);
-		int tileID = cha;
-		// get row number by dividing by 16, rounding down
-		int ty = (int) Math.floor(tileID / 16);
-
-		// get column number by subtracting ty*16 from tile ID
-		int tx = tileID - ty * 16;
-
-		// tile graphic is offset by tx*width and ty*height, and is width
-		// and height in size
-		tileGraphic = tiles.getSubimage(tx * width, ty * height, width, height);
-		BufferedImage ColorTileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-		// go through it pixel by pixel
-		for(int x = 0; x < width; x++) {
-			for(int y = 0; y < height; y++) {
-				int pixel = tileGraphic.getRGB(x, y);
-				int red = (pixel & 0x00ff0000) >> 16;
-				int green = (pixel & 0x0000ff00) >> 8;
-				int blue = pixel & 0x000000ff;
-				int alpha = pixel >> 24 & 0xFF;
-				// if pixel alpha is zero, do nothing
-				if(alpha == 0) {
-					continue;
+		//That shit made my eyes bleed yo. Let's do it better.
+		
+		//get cols of image based on width
+		int cols = tiles.getWidth() / width;
+		
+		//get the location of, no need for anything fancy here, integer division and modulo
+		int ty = chr[0] / cols;
+		int tx = chr[0] % cols;
+		
+		BufferedImage src = tiles.getSubimage(tx, ty, width, height);
+		
+		int bgRGB = -1;
+		if(bg != null)
+			bgRGB = bg.getRGB();
+		
+		//draw the tile onto the image, swapping out black for bg, and white for fg
+		for(int y = 0; y < height; ++y) {
+			for(int x = 0; x < width; ++x) {
+				int srcRGB = src.getRGB(x, y);
+				int a = srcRGB >> 24 & 0xFF;
+				if(a == 0) continue;
+				srcRGB &= 0xFFFFFF;
+				
+				//assume greyscale
+				int dstRGB = 0;
+				if(srcRGB > 0) {
+					//most CPUs eat integer math alive, so, let's use that
+					int val = srcRGB & 0xFF;
+					int r = fg.getRed() * val / 255;
+					int g = fg.getGreen() * val / 255;
+					int b = fg.getBlue() * val / 255;
+					dstRGB = (r << 16) | (g << 8) | b;
+					//Just a little alpha compositing
+					if(bgRGB != -1)
+						dstRGB = dstRGB*a/255+bgRGB*(255-a)/255;
+					else
+						dstRGB |= a << 24;
 				}
-				// if pixel R/G/B not equal, copy over unchanged
-				if(!(red == green && green == blue)) {
-					ColorTileGraphic.setRGB(x, y, pixel);
-				} else {
-					// if equal, assign it fg color RGB values divided by
-					// (256/R)
-					Color c = new Color(0, 0, 0, alpha);
-					if(red != 0) {
-						float greyoffset = 255 / red;
-						int newred = (int) (fg.getRed() / greyoffset);
-						int newgreen = (int) (fg.getGreen() / greyoffset);
-						int newblue = (int) (fg.getBlue() / greyoffset);
-						// JOptionPane.showMessageDialog(null,String.valueOf(newred)+" "+String.valueOf(newgreen)+" "+String.valueOf(newblue)+" "+String.valueOf(alpha)+" "+String.valueOf(greyoffset));
-						c = new Color(newred, newgreen, newblue, alpha);
-					}
-					ColorTileGraphic.setRGB(x, y, c.getRGB());
-				}
+				//This is slow
+				image.setRGB(x, y, dstRGB);
 			}
 		}
-		// apply to tile
-		gfx.drawImage(ColorTileGraphic, 0, 0, null);
+		
 
 		gfx.dispose();
 		
