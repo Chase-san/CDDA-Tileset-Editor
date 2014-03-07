@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -52,6 +53,7 @@ import org.csdgn.cddatse.data.GFX;
 import org.csdgn.cddatse.data.InternalTile;
 import org.csdgn.cddatse.data.TileInfo;
 import org.csdgn.maru.io.EqualsFileFilter;
+import org.csdgn.maru.io.EndsWithFileFilter;
 import org.csdgn.maru.swing.ArrayListModel;
 import org.csdgn.maru.util.Tuple;
 
@@ -615,12 +617,42 @@ public class EditorFrame extends JFrame {
 
 		HashMap<String, AsciiEntry> entries = new HashMap<String, AsciiEntry>();
 		
-		
 		AsciiEntry.getAllAsciiTiles(jsonFolder, entries);
-
 		return entries;
 	}
+	
+	private BufferedImage getAsciiTileset() {
+			JFileChooser imageChooser = null;
+			AppToolkit.setFileChooserReadOnly(true);
+			imageChooser = new JFileChooser();
+			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
+			imageChooser.addChoosableFileFilter(filter);
+			imageChooser.setFileFilter(filter);
+			imageChooser.setDialogTitle("Select ASCII tile page:");
 
+		
+		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
+
+		if (imageChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+			return null;
+		}
+		
+		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
+
+		File file = imageChooser.getSelectedFile();
+		if (!file.exists()) {
+			return null;
+		}
+
+		try {
+			return ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 	private void doGenerateAsciiTiles(boolean withBG) {
 		HashMap<String, AsciiEntry> entries = getAsciiEntries();
 
@@ -628,7 +660,21 @@ public class EditorFrame extends JFrame {
 		
 		GFX gfx = GFX.instance;
 		
+		BufferedImage tilesToUse = getAsciiTileset();
 		TileInfo info = GFX.instance.getTileInfo();
+		
+		if(tilesToUse == null) {
+			int dialogBtn = JOptionPane.YES_NO_OPTION;
+			int tileCheckDlg = JOptionPane.showConfirmDialog(null,"No tilepage selected - would you like to generate font-based ASCII tiles instead?","Continue anyway?",dialogBtn);
+			if(tileCheckDlg == JOptionPane.NO_OPTION){
+			return;}
+		}
+		else{
+			if(tilesToUse.getWidth() != info.width*16 || tilesToUse.getHeight() != info.height*16) {
+				AppToolkit.showError(this, "Tilepage dimensions do not match loaded tileset! Must be "+String.valueOf(info.width*16)+"x"+String.valueOf(info.height*16)+" pixels.");
+			return;}
+		}
+
 		BufferedImage bg = new BufferedImage(info.width,info.height,BufferedImage.TYPE_INT_RGB);
 		
 		
@@ -645,15 +691,62 @@ public class EditorFrame extends JFrame {
 			if(tile.isImageless()) {
 				AsciiEntry e = entries.get(tile.id);
 				if(e != null) {
-					BufferedImage img = e.createAsciiTile(info.width, info.height);
+					BufferedImage img = e.createAsciiTile(info.width, info.height, tilesToUse);
 
 					gfx.images.add(img);
 					tile.image.first = img;
-					if(withBG)
+					if(withBG && !e.isOverlay())
 						tile.image.second = bg;
-					
+					if(e.isMultitile()) {
+						//let'sa go!
+						//center
+						//JOptionPane.showMessageDialog(null,e.id);
+						img=e.createAsciiTile(info.width, info.height, 197, tilesToUse);
+						gfx.images.add(img);
+						tile.center = true;
+						tile.centerImage.first = img;
+						if(withBG)
+							tile.centerImage.second = bg;
+						//corner
+						img=e.createAsciiTile(info.width, info.height, 218, tilesToUse);
+						gfx.images.add(img);
+						tile.corner = true;
+						tile.cornerImage.first = img;
+						if(withBG)
+							tile.cornerImage.second = bg;
+						//edge
+						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.edge = true;
+						tile.edgeImage.first = img;
+						if(withBG)
+							tile.edgeImage.second = bg;
+						//tConnection
+						img=e.createAsciiTile(info.width, info.height, 194, tilesToUse);
+						gfx.images.add(img);
+						tile.tConnection = true;
+						tile.tConnectionImage.first = img;
+						if(withBG)
+							tile.tConnectionImage.second = bg;
+						//end_piece
+						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.endPiece = true;
+						tile.endPieceImage.first = img;
+						if(withBG)
+							tile.endPieceImage.second = bg;
+						//unconnected
+						img=e.createAsciiTile(info.width, info.height, 254, tilesToUse);
+						gfx.images.add(img);
+						tile.unconnected = true;
+						tile.unconnectedImage.first = img;
+						if(withBG)
+							tile.unconnectedImage.second = bg;
+						
+					}
+					if(e.id.startsWith("vp_")) tile.rotates = true;
 					if(e.hasBrokenTile()) {
-						img = e.createBrokenAsciiTile(info.width, info.height);
+						img = e.createBrokenAsciiTile(info.width, info.height, tilesToUse);
 						gfx.images.add(img);
 						tile.broken = true;
 						tile.brokenImage.first = img;
