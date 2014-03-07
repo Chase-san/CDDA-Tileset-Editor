@@ -31,7 +31,7 @@ public class Version {
 	public static final String NAME = "Cataclysm DDA: Tileset Editor";
 	public static final int MAJOR = 0;
 	public static final int MINOR = 11;
-	public static final String STATUS = "rc0";
+	public static final String STATUS = "pre";
 
 	public static final String getVersionString() {
 		return String.format("%s %d.%d%s", NAME, MAJOR, MINOR, STATUS);
