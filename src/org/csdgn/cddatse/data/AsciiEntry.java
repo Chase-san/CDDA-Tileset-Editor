@@ -144,7 +144,11 @@ public class AsciiEntry {
 				int r = srcRGB >> 16 & 0xFF;
 				int g = srcRGB >> 8 & 0xFF;
 				int b = srcRGB & 0xFF;
-				if(a == 0) continue;
+				if(a == 0) {
+					if(bgRGB == -1) continue;
+					image.setRGB(x, y, bgRGB); //transparency must not override back color
+					continue; //but we have nothing else to do in this loop then
+				}
 				srcRGB &= 0xFFFFFF;
 				
 				int dstRGB = 0;
@@ -154,16 +158,16 @@ public class AsciiEntry {
 					//most CPUs eat integer math alive, so, let's use that
 					int r2 = fg.getRed() * r / 255;
 					int g2 = fg.getGreen() * r / 255;
-					int b2 = fg.getBlue() * r / 255;
+					int b2 = fg.getBlue() * r / 255; //this I get
 					
-					dstRGB = (r2 << 16) | (g2 << 8) | b2;
+					dstRGB = (r2 << 16) | (g2 << 8) | b2; //I have not a single idea what goes on here. Binary integer concatenation? Where's alpha?
 					//Just a little compositing
 					if(bgRGB != -1)
-						dstRGB = (int) ((long)dstRGB+bgRGB*(255-r)/255);
+						dstRGB = (int) ((long)dstRGB+bgRGB*(255-r)/255); //compositing back color and fore color without using alpha?
 					else if(srcRGB == 0)
 						a = 0;
 					
-					dstRGB |= a << 24;
+					dstRGB |= a << 24; //adding original alpha here does not help if there is background color
 
 				}
 				//This is slow
@@ -218,7 +222,7 @@ public class AsciiEntry {
 
 	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
 		map.put("unknown", new AsciiEntry("unknown", "red", "?"));
-		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", "_", false, true));
+		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", String.valueOf((char)176), false, true));
 		map.put("player_female", new AsciiEntry("player_female", "white", "@"));
 		map.put("player_male", new AsciiEntry("player_male", "white", "@"));
 		map.put("corpse", new AsciiEntry("corpse", "dkgray", "o"));
@@ -228,13 +232,13 @@ public class AsciiEntry {
 		map.put("footstep", new AsciiEntry("footstep", "yellow", "="));
 		map.put("explosion", new AsciiEntry("explosion", "red_yellow", "o"));
 		map.put("lighting_hidden", new AsciiEntry("lighting_hidden", "dkgray_black", "#"));
-		map.put("lighting_lowlight_light", new AsciiEntry("lighting_lowlight_light", "black", " "));
-		map.put("lighting_lowlight_dark", new AsciiEntry("lighting_lowlight_dark", "black", " "));
+		map.put("lighting_lowlight_light", new AsciiEntry("lighting_lowlight_light", "black_ltgray", " "));
+		map.put("lighting_lowlight_dark", new AsciiEntry("lighting_lowlight_dark", "black_dkgray", " "));
 		map.put("lighting_boomered_light", new AsciiEntry("lighting_boomered_light", "magenta_pink", "#"));
 		map.put("lighting_boomered_dark", new AsciiEntry("lighting_boomered_dark", "magenta_pink", "#"));
 
-		map.put("line_target", new AsciiEntry("line_target", "yellow", "-"));
-		map.put("line_trail", new AsciiEntry("line_trail", "yellow", "-"));
+		map.put("line_target", new AsciiEntry("line_target", "yellow", "X", false, true));
+		map.put("line_trail", new AsciiEntry("line_trail", "yellow", String.valueOf((char)177), false, true));
 
 		map.put("weather_acid_drop", new AsciiEntry("weather_acid_drop", "green", "'"));
 		map.put("weather_rain_drop", new AsciiEntry("weather_rain_drop", "blue", "'"));
@@ -243,6 +247,47 @@ public class AsciiEntry {
 		getLegacyAsciiTiles(map);
 
 		getAsciiTiles(jsonFolder, map);
+		
+		//adding some of the missing defaults
+		map.put("npc_female", new AsciiEntry("npc_female", "yellow", "@"));
+		map.put("npc_male", new AsciiEntry("npc_male", "yellow", "@"));
+		map.put("animation_bullet_normal", new AsciiEntry("animation_bullet_normal", "yellow", String.valueOf((char)249), false, true));
+		map.put("animation_bullet_flame", new AsciiEntry("animation_bullet_flame", "red", "*", false, true));
+		map.put("animation_bullet_shrapnel", new AsciiEntry("animation_bullet_shrapnel", "yellow", String.valueOf((char)15), false, true));
+		
+		//adding tiles for hardcoded field elements
+		map.put("fd_null", new AsciiEntry("fd_null", "black", " "));
+		map.put("fd_blood", new AsciiEntry("fd_blood", "red", String.valueOf((char)247)));
+		map.put("fd_bile", new AsciiEntry("fd_bile", "yellow", String.valueOf((char)247)));
+		map.put("fd_gibs_flesh", new AsciiEntry("fd_gibs_flesh", "red", String.valueOf((char)253)));
+		map.put("fd_gibs_veggy", new AsciiEntry("fd_gibs_veggy", "ltgreen", String.valueOf((char)253)));
+		map.put("fd_web", new AsciiEntry("fd_web", "yellow", String.valueOf((char)15)));
+		map.put("fd_slime", new AsciiEntry("fd_slime", "green", String.valueOf((char)126)));
+		map.put("fd_acid", new AsciiEntry("fd_acid", "ltgreen_green", String.valueOf((char)247)));
+		map.put("fd_sap", new AsciiEntry("fd_sap", "black_yellow", String.valueOf((char)247)));
+		map.put("fd_sludge", new AsciiEntry("fd_sludge", "magenta", String.valueOf((char)247)));
+		map.put("fd_fire", new AsciiEntry("fd_fire", "yellow_red", String.valueOf((char)127)));
+		map.put("fd_rubble", new AsciiEntry("fd_rubble", "ltgray_dkgray", "#"));
+		map.put("fd_smoke", new AsciiEntry("fd_smoke", "ltgray_black", String.valueOf((char)177)));
+		map.put("fd_toxic_gas", new AsciiEntry("fd_toxic_gas", "ltgreen", String.valueOf((char)177)));
+		map.put("fd_tear_gas", new AsciiEntry("fd_tear_gas", "ltcyan", String.valueOf((char)177)));
+		map.put("fd_nuke_gas", new AsciiEntry("fd_nuke_gas", "yellow_ltgreen", String.valueOf((char)177)));
+		map.put("fd_gas_vent", new AsciiEntry("fd_gas_vent", "green", String.valueOf((char)9)));
+		map.put("fd_fire_vent", new AsciiEntry("fd_fire_vent", "red", String.valueOf((char)9)));
+		map.put("fd_flame_burst", new AsciiEntry("fd_flame_burst", "red_yellow", "&"));
+		map.put("fd_electricity", new AsciiEntry("fd_electricity", "yellow_ltcyan", String.valueOf((char)157)));
+		map.put("fd_fatigue", new AsciiEntry("fd_fatigue", "yellow", "!"));
+		map.put("fd_push_items", new AsciiEntry("fd_push_items", "white", " "));
+		map.put("fd_shock_vent", new AsciiEntry("fd_shock_vent", "ltcyan", String.valueOf((char)9)));
+		map.put("fd_acid_vent", new AsciiEntry("fd_acid_vent", "ltgreen", String.valueOf((char)9)));
+		map.put("fd_plasma", new AsciiEntry("fd_plasma", "pink", "&"));
+		map.put("fd_laser", new AsciiEntry("fd_laser", "red", String.valueOf((char)157)));
+		map.put("fd_blood_veggy", new AsciiEntry("fd_blood_veggy", "green", String.valueOf((char)247)));
+		map.put("fd_blood_insect", new AsciiEntry("fd_blood_insect", "white", String.valueOf((char)247)));
+		map.put("fd_blood_invertebrate", new AsciiEntry("fd_blood_invertebrate", "ltred", String.valueOf((char)247)));
+		map.put("fd_gibs_insect", new AsciiEntry("fd_gibs_insect", "ltgray", String.valueOf((char)253)));
+		map.put("fd_gibs_invertebrate", new AsciiEntry("fd_gibs_invertebrate", "ltred", String.valueOf((char)253)));
+		
 	}
 
 	private static void getAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
