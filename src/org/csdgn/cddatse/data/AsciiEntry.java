@@ -130,7 +130,7 @@ public class AsciiEntry {
 		int ty = chr[0] / cols;
 		int tx = chr[0] % cols;
 		
-		BufferedImage src = tiles.getSubimage(tx, ty, width, height);
+		BufferedImage src = tiles.getSubimage(tx*width, ty*height, width, height);
 		
 		int bgRGB = -1;
 		if(bg != null)
@@ -141,23 +141,30 @@ public class AsciiEntry {
 			for(int x = 0; x < width; ++x) {
 				int srcRGB = src.getRGB(x, y);
 				int a = srcRGB >> 24 & 0xFF;
+				int r = srcRGB >> 16 & 0xFF;
+				int g = srcRGB >> 8 & 0xFF;
+				int b = srcRGB & 0xFF;
 				if(a == 0) continue;
 				srcRGB &= 0xFFFFFF;
 				
-				//assume greyscale
 				int dstRGB = 0;
-				if(srcRGB > 0) {
+				if((r&g&b) != (r|g|b)) {
+					dstRGB = srcRGB;
+				} else {
 					//most CPUs eat integer math alive, so, let's use that
-					int val = srcRGB & 0xFF;
-					int r = fg.getRed() * val / 255;
-					int g = fg.getGreen() * val / 255;
-					int b = fg.getBlue() * val / 255;
-					dstRGB = (r << 16) | (g << 8) | b;
-					//Just a little alpha compositing
+					int r2 = fg.getRed() * r / 255;
+					int g2 = fg.getGreen() * r / 255;
+					int b2 = fg.getBlue() * r / 255;
+					
+					dstRGB = (r2 << 16) | (g2 << 8) | b2;
+					//Just a little compositing
 					if(bgRGB != -1)
-						dstRGB = dstRGB*a/255+bgRGB*(255-a)/255;
-					else
-						dstRGB |= a << 24;
+						dstRGB = (int) ((long)dstRGB+bgRGB*(255-r)/255);
+					else if(srcRGB == 0)
+						a = 0;
+					
+					dstRGB |= a << 24;
+
 				}
 				//This is slow
 				image.setRGB(x, y, dstRGB);
