@@ -92,7 +92,7 @@ public class AsciiEntry {
 			"tr_lava", "tr_portal", "tr_ledge", "tr_boobytrap", "tr_temple_flood", "tr_temple_toggle", "tr_glow", "tr_hum", "tr_shadow",
 			"tr_drain", "tr_snake" };
 
-	private static BufferedImage generateTileImage(int width, int height) {
+	private static BufferedImage generateEmptyTileImage(int width, int height) {
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		return image;
 	}
@@ -111,7 +111,7 @@ public class AsciiEntry {
 	}
 	
 	private static BufferedImage createAsciiFromTileset(int width, int height, char[] chr, Color fg, Color bg, BufferedImage tiles) {
-		BufferedImage image = generateTileImage(width,height);
+		BufferedImage image = generateEmptyTileImage(width,height);
 		
 		if(fg == null)
 			return image;
@@ -169,7 +169,7 @@ public class AsciiEntry {
 	}
 	
 	private static BufferedImage createAsciiTile(int width, int height, char[] chr, Color fg, Color bg) {
-		BufferedImage image = generateTileImage(width,height);
+		BufferedImage image = generateEmptyTileImage(width,height);
 		if(fg == null)
 			return image;
 		Graphics2D gfx = generateTileGFX(image);
