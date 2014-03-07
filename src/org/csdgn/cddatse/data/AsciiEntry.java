@@ -370,6 +370,7 @@ public class AsciiEntry {
 	public final Color color;
 	public final String id;
 	public final boolean multitile;
+	/** Lays over other tiles? (No BG) */
 	public final boolean overlay;
 
 	public final char symbol;
@@ -502,13 +503,25 @@ public class AsciiEntry {
 	public BufferedImage createAsciiTile(int width, int height) {
 		return createAsciiTile(width, height, new char[] { symbol }, color, bgcolor);
 	}
+	
+	public BufferedImage createAsciiTile(int width, int height, BufferedImage tileset) {
+		return createAsciiFromTileset(width, height, new char[] { symbol }, color, bgcolor, tileset);
+	}
 
 	public BufferedImage createAsciiTile(int width, int height, int tileID) {
 		return createAsciiTile(width, height, new char[] { (char) tileID }, color, bgcolor);
 	}
+	
+	public BufferedImage createAsciiTile(int width, int height, int tileID, BufferedImage tileset) {
+		return createAsciiFromTileset(width, height, new char[] { (char) tileID }, color, bgcolor, tileset);
+	}
 
 	public BufferedImage createBrokenAsciiTile(int width, int height) {
-		return createAsciiTile(width, height, new char[] { symbol }, brkn_color, brkn_bgcolor);
+		return createAsciiTile(width, height, new char[] { broken_symbol }, brkn_color, brkn_bgcolor);
+	}
+	
+	public BufferedImage createBrokenAsciiTile(int width, int height, BufferedImage tileset) {
+		return createAsciiFromTileset(width, height, new char[] { broken_symbol }, brkn_color, brkn_bgcolor, tileset);
 	}
 
 	@Override
