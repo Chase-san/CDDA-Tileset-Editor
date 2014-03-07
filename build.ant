@@ -14,7 +14,7 @@
 	<property name="version.file" value="src/org/csdgn/cddatse/Version.java" />
 	
 	<property name="app.name" value="cddatse" />
-	<property name="app.build" value="${version.major}.${version.minor}" />
+	<property name="app.build" value="${version.major}.${version.minor}${version.status}" />
 	
 	<property name="launch.exe" value="cddatse.exe" />
 	<property name="launch.sh" value="cddatse.sh" />
@@ -39,6 +39,7 @@
 		<!-- Update our VERSION java file -->
 		<replaceregexp file="${version.file}" match="int MAJOR = [0-9]*;" replace="int MAJOR = ${version.major};" />
 		<replaceregexp file="${version.file}" match="int MINOR = [0-9]*;" replace="int MINOR = ${version.minor};" />
+		<replaceregexp file="${version.file}" match='String STATUS = ".*?";' replace='String STATUS = "${version.status}";' />
 		
 		<!-- Delete all the current files so we can recompile with our compiler. -->
 		<mkdir dir="${bindir}"/>
@@ -93,6 +94,7 @@
 		
 		<!-- Copy readme/license -->
 		<copy file="LICENSE" todir="${releasedir}" />
+		<copy file="ICONLICENSE" todir="${releasedir}" />
 		<copy file="README.md" todir="${releasedir}" />
 		
 		<!-- Delete the manifest, we already made use of it -->

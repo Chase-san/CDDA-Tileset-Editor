@@ -1,2 +1,3 @@
 version.major=0
-version.minor=10
+version.minor=11
+version.status=rc0
