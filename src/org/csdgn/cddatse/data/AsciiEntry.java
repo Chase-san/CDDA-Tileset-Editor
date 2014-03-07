@@ -3,22 +3,13 @@ package org.csdgn.cddatse.data;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.RenderingHints;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.Math;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JOptionPane;
-import javax.swing.JLabel;
-import javax.swing.JFrame;
-import javax.swing.ImageIcon;
 
 import org.csdgn.maru.Files;
 import org.csdgn.maru.Strings;
@@ -29,52 +20,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class AsciiEntry {
-	private static final Color[] colors = new Color[] { 
-	new Color(0, 0, 0), 
-	new Color(255, 0, 0), 
-	new Color(0, 110, 0),
-	new Color(92, 51, 23), 
-	new Color(0, 0, 200), 
-	new Color(139, 58, 98), 
-	new Color(0, 150, 180), 
-	new Color(150, 150, 150),
-	new Color(150, 150, 150),
-	new Color(99, 99, 99), 
-	new Color(99, 99, 99), 
-	new Color(255, 150, 150), 
-	new Color(255, 150, 150), 
-	new Color(0, 255, 0), 
-	new Color(0, 255, 0), 
-	new Color(190, 190, 0), 
-	new Color(100, 100, 255),
-	new Color(100, 100, 255),
-	new Color(255, 0, 255), 
-	new Color(0, 240, 255), 
-	new Color(0, 240, 255), 
-	new Color(255, 255, 255) };
-	private static final String[] colorStrings = new String[] { 
-	"BLACK", 
-	"RED", 
-	"GREEN", 
-	"BROWN", 
-	"BLUE", 
-	"MAGENTA", 
-	"CYAN", 
-	"LTGRAY",
-	"LIGHT_GRAY", 
-	"DKGRAY",
-	"DARK_GRAY", 
-	"LTRED", 
-	"LIGHT_RED", 
-	"LTGREEN", 
-	"LIGHT_GREEN", 
-	"YELLOW", 
-	"LTBLUE", 
-	"LIGHT_BLUE", 
-	"PINK", 
-	"LTCYAN", 
-	"LIGHT_CYAN", 
-	"WHITE" };
+	private static final Color[] colors = new Color[] { new Color(0, 0, 0), new Color(255, 0, 0), new Color(0, 110, 0),
+			new Color(92, 51, 23), new Color(0, 0, 200), new Color(139, 58, 98), new Color(0, 150, 180), new Color(150, 150, 150),
+			new Color(150, 150, 150), new Color(99, 99, 99), new Color(99, 99, 99), new Color(255, 150, 150), new Color(255, 150, 150),
+			new Color(0, 255, 0), new Color(0, 255, 0), new Color(190, 190, 0), new Color(100, 100, 255), new Color(100, 100, 255),
+			new Color(255, 0, 255), new Color(0, 240, 255), new Color(0, 240, 255), new Color(255, 255, 255) };
+	private static final String[] colorStrings = new String[] { "BLACK", "RED", "GREEN", "BROWN", "BLUE", "MAGENTA", "CYAN", "LTGRAY",
+			"LIGHT_GRAY", "DKGRAY", "DARK_GRAY", "LTRED", "LIGHT_RED", "LTGREEN", "LIGHT_GREEN", "YELLOW", "LTBLUE", "LIGHT_BLUE", "PINK",
+			"LTCYAN", "LIGHT_CYAN", "WHITE" };
 
 	private static final String[] field_id = { "fd_null", "fd_blood", "fd_bile", "fd_gibs_flesh", "fd_gibs_veggy", "fd_web", "fd_slime",
 			"fd_acid", "fd_sap", "fd_sludge", "fd_fire", "fd_rubble", "fd_smoke", "fd_toxic_gas", "fd_tear_gas", "fd_nuke_gas",
@@ -138,6 +91,131 @@ public class AsciiEntry {
 			"tr_landmine", "tr_landmine_buried", "tr_telepad", "tr_goo", "tr_dissector", "tr_sinkhole", "tr_pit", "tr_spike_pit",
 			"tr_lava", "tr_portal", "tr_ledge", "tr_boobytrap", "tr_temple_flood", "tr_temple_toggle", "tr_glow", "tr_hum", "tr_shadow",
 			"tr_drain", "tr_snake" };
+
+	private static BufferedImage generateTileImage(int width, int height) {
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		return image;
+	}
+	
+	private static Graphics2D generateTileGFX(BufferedImage img) {
+		Graphics2D gfx = img.createGraphics();
+
+		gfx.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		gfx.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		gfx.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		gfx.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		gfx.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		gfx.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		
+		return gfx;
+	}
+	
+	private static BufferedImage createAsciiFromTileset(int width, int height, char[] chr, Color fg, Color bg, BufferedImage tiles) {
+		BufferedImage image = generateTileImage(width,height);
+		
+		if(fg == null)
+			return image;
+		
+		Graphics2D gfx = generateTileGFX(image);
+		
+		// rectangle fill the background
+		if(bg != null) {
+			gfx.setColor(bg);
+			gfx.fillRect(0, 0, width, height);
+		}
+
+		BufferedImage tileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		// the tile ID is the codepage code of the character.
+		char cha = new String(chr).charAt(0);
+		int tileID = cha;
+		// get row number by dividing by 16, rounding down
+		int ty = (int) Math.floor(tileID / 16);
+
+		// get column number by subtracting ty*16 from tile ID
+		int tx = tileID - ty * 16;
+
+		// tile graphic is offset by tx*width and ty*height, and is width
+		// and height in size
+		tileGraphic = tiles.getSubimage(tx * width, ty * height, width, height);
+		BufferedImage ColorTileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+		// go through it pixel by pixel
+		for(int x = 0; x < width; x++) {
+			for(int y = 0; y < height; y++) {
+				int pixel = tileGraphic.getRGB(x, y);
+				int red = (pixel & 0x00ff0000) >> 16;
+				int green = (pixel & 0x0000ff00) >> 8;
+				int blue = pixel & 0x000000ff;
+				int alpha = pixel >> 24 & 0xFF;
+				// if pixel alpha is zero, do nothing
+				if(alpha == 0) {
+					continue;
+				}
+				// if pixel R/G/B not equal, copy over unchanged
+				if(!(red == green && green == blue)) {
+					ColorTileGraphic.setRGB(x, y, pixel);
+				} else {
+					// if equal, assign it fg color RGB values divided by
+					// (256/R)
+					Color c = new Color(0, 0, 0, alpha);
+					if(red != 0) {
+						float greyoffset = 255 / red;
+						int newred = (int) (fg.getRed() / greyoffset);
+						int newgreen = (int) (fg.getGreen() / greyoffset);
+						int newblue = (int) (fg.getBlue() / greyoffset);
+						// JOptionPane.showMessageDialog(null,String.valueOf(newred)+" "+String.valueOf(newgreen)+" "+String.valueOf(newblue)+" "+String.valueOf(alpha)+" "+String.valueOf(greyoffset));
+						c = new Color(newred, newgreen, newblue, alpha);
+					}
+					ColorTileGraphic.setRGB(x, y, c.getRGB());
+				}
+			}
+		}
+		// apply to tile
+		gfx.drawImage(ColorTileGraphic, 0, 0, null);
+
+		gfx.dispose();
+		
+		
+		return image;
+	}
+	
+	private static BufferedImage createAsciiTile(int width, int height, char[] chr, Color fg, Color bg) {
+		BufferedImage image = generateTileImage(width,height);
+		if(fg == null)
+			return image;
+		Graphics2D gfx = generateTileGFX(image);
+
+		// Something like this...
+		Font font = new Font(Font.MONOSPACED, Font.BOLD, height - 2);
+		gfx.setFont(font);
+
+		GlyphVector vec = font.createGlyphVector(gfx.getFontRenderContext(), chr);
+		Rectangle2D rect = vec.getGlyphVisualBounds(0).getBounds2D();
+
+		float yOffset = (float) -rect.getY();
+
+		// center it
+		float x = (float) ((width >> 1) - rect.getWidth() / 2.0);
+		float y = (float) ((height >> 1) - rect.getHeight() / 2.0);
+
+		gfx.translate(x, y + yOffset);
+
+		// TODO scale it so we are sure it fits
+		if(bg != null) {
+			gfx.setColor(bg);
+			gfx.drawGlyphVector(vec, -1, -1);
+			gfx.drawGlyphVector(vec, 1, -1);
+			gfx.drawGlyphVector(vec, -1, 1);
+			gfx.drawGlyphVector(vec, 1, 1);
+		}
+
+		gfx.setColor(fg);
+		gfx.drawGlyphVector(vec, 0, 0);
+		
+		gfx.dispose();
+
+		return image;
+	}
 
 	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
 		map.put("unknown", new AsciiEntry("unknown", "red", "?"));
@@ -214,53 +292,74 @@ public class AsciiEntry {
 			if(obj.has("id") && obj.has("symbol") && obj.has("color")) {
 				// vp_
 				String id = obj.get("id").getAsString();
-				
+
 				String symbol = obj.get("symbol").getAsString();
 				String color = obj.get("color").getAsString();
 
 				if("vehicle_part".equalsIgnoreCase(obj.get("type").getAsString())) {
 					id = "vp_" + id;
 					String flags = "";
-					if(obj.has("flags")) flags = obj.getAsJsonArray("flags").toString();
-					//symbol gets overridden based on which VP is it
-					boolean frame=false;
-					if(obj.has("location")){
-						if("structure".equalsIgnoreCase(obj.get("location").getAsString())){
-						frame=true;}
+					if(obj.has("flags")) {
+						flags = obj.getAsJsonArray("flags").toString();
+					}
+					// symbol gets overridden based on which VP is it
+					boolean frame = false;
+					if(obj.has("location")) {
+						if("structure".equalsIgnoreCase(obj.get("location").getAsString())) {
+							frame = true;
+						}
 						int tileID = -1;
-						//define tiles
-						//_nw - top left corner
-						if(id.endsWith("_nw")) tileID = (frame) ? 201 : 218;
-						//_ne - top right corner
-						if(id.endsWith("_ne")) tileID = (frame) ? 187 : 191;
-						//_sw - bottom left corner
-						if(id.endsWith("_sw")) tileID = (frame) ? 200 : 192;
-						//_se - bottom right corner
-						if(id.endsWith("_se")) tileID = (frame) ? 188 : 217;
-						//_vertical or _vertical_2 - vertical (duh)
-						if(id.endsWith("_vertical") || id.endsWith("_vertical_2")) tileID = (frame) ? 215 : 179;
-						//_horizontal or _horizontal_2 - horizontal (duuuh)
-						if(id.endsWith("_horizontal") || id.endsWith("_horizontal_2")) tileID = (frame) ? 216 : 196;
-						//_cross - internal cross
-						if(id.endsWith("_cross")) tileID = (frame) ? 206 : 197;
-						
-						//as a stopper of sorts, check for untouchable tiles here and set the ID back to -1 if it's needed
-						if(flags.indexOf("CARGO")>=0 || flags.indexOf("AISLE")>=0 || flags.indexOf("PROTRUSION")>=0){
-						tileID = -1;}
-						
-						if(tileID > 0) symbol = new String(new char[]{(char)tileID});
+						// define tiles
+						// _nw - top left corner
+						if(id.endsWith("_nw")) {
+							tileID = frame ? 201 : 218;
+						}
+						// _ne - top right corner
+						if(id.endsWith("_ne")) {
+							tileID = frame ? 187 : 191;
+						}
+						// _sw - bottom left corner
+						if(id.endsWith("_sw")) {
+							tileID = frame ? 200 : 192;
+						}
+						// _se - bottom right corner
+						if(id.endsWith("_se")) {
+							tileID = frame ? 188 : 217;
+						}
+						// _vertical or _vertical_2 - vertical (duh)
+						if(id.endsWith("_vertical") || id.endsWith("_vertical_2")) {
+							tileID = frame ? 215 : 179;
+						}
+						// _horizontal or _horizontal_2 - horizontal (duuuh)
+						if(id.endsWith("_horizontal") || id.endsWith("_horizontal_2")) {
+							tileID = frame ? 216 : 196;
+						}
+						// _cross - internal cross
+						if(id.endsWith("_cross")) {
+							tileID = frame ? 206 : 197;
+						}
+
+						// as a stopper of sorts, check for untouchable tiles
+						// here and set the ID back to -1 if it's needed
+						if(flags.indexOf("CARGO") >= 0 || flags.indexOf("AISLE") >= 0 || flags.indexOf("PROTRUSION") >= 0) {
+							tileID = -1;
+						}
+
+						if(tileID > 0) {
+							symbol = new String(new char[] { (char) tileID });
+						}
 					}
 				}
-				
-				//JOptionPane.showMessageDialog(null, symbol);
 
-				if(symbol.length() > 1){
-				//if((symbol=="LINE_XOXO") || (symbol=="LINE_OXOX")){
-				//going multitile
-				//in vanilla this is just the walls, so we can fudge it a little here
+				// JOptionPane.showMessageDialog(null, symbol);
+
+				if(symbol.length() > 1) {
+					// if((symbol=="LINE_XOXO") || (symbol=="LINE_OXOX")){
+					// going multitile
+					// in vanilla this is just the walls, so we can fudge it a
+					// little here
 					map.put(id, new AsciiEntry(id, color, "#", true, false));
-				}
-				else {
+				} else {
 					if(obj.has("broken_symbol") && obj.has("broken_color")) {
 						map.put(id, new AsciiEntry(id, color, symbol, obj.get("broken_color").getAsString(), obj.get("broken_symbol")
 								.getAsString()));
@@ -281,51 +380,16 @@ public class AsciiEntry {
 	public final char broken_symbol;
 	public final Color color;
 	public final String id;
-	public final char symbol;
 	public final boolean multitile;
 	public final boolean overlay;
 
-	
-	//custom constructor for setting multitile and overlay flags
-	public AsciiEntry(String id, String color, String symbol, boolean multitile, boolean overlay) {
-		this.id = id;
-		this.symbol = symbol.charAt(0);
-		this.multitile = multitile;
-		this.overlay = overlay;
+	public final char symbol;
 
-		Color fg = Color.WHITE;
-		Color bg = null;
-		String fgStr = color;
-		String bgStr = null;
-
-		if(color.contains("_")) {
-			String[] str = Strings.split(color, "_");
-			fgStr = str[0];
-			bgStr = str[1];
-		}
-
-		for(int i = 0; i < colors.length; ++i) {
-			if(colorStrings[i].equalsIgnoreCase(fgStr)) {
-				fg = colors[i];
-			}
-			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
-			}
-		}
-
-		this.color = fg;
-		if(overlay){bgcolor=null;
-		}else{bgcolor = bg;}
-		brkn_color = null;
-		brkn_bgcolor = null;
-		broken_symbol = ' ';
-	}
-	
 	public AsciiEntry(String id, String color, String symbol) {
 		this.id = id;
 		this.symbol = symbol.charAt(0);
-		this.multitile = false;
-		this.overlay = false;
+		multitile = false;
+		overlay = false;
 
 		Color fg = Color.WHITE;
 		Color bg = null;
@@ -354,11 +418,49 @@ public class AsciiEntry {
 		broken_symbol = ' ';
 	}
 
+	// custom constructor for setting multitile and overlay flags
+	public AsciiEntry(String id, String color, String symbol, boolean multitile, boolean overlay) {
+		this.id = id;
+		this.symbol = symbol.charAt(0);
+		this.multitile = multitile;
+		this.overlay = overlay;
+
+		Color fg = Color.WHITE;
+		Color bg = null;
+		String fgStr = color;
+		String bgStr = null;
+
+		if(color.contains("_")) {
+			String[] str = Strings.split(color, "_");
+			fgStr = str[0];
+			bgStr = str[1];
+		}
+
+		for(int i = 0; i < colors.length; ++i) {
+			if(colorStrings[i].equalsIgnoreCase(fgStr)) {
+				fg = colors[i];
+			}
+			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
+				bg = colors[i];
+			}
+		}
+
+		this.color = fg;
+		if(overlay) {
+			bgcolor = null;
+		} else {
+			bgcolor = bg;
+		}
+		brkn_color = null;
+		brkn_bgcolor = null;
+		broken_symbol = ' ';
+	}
+
 	public AsciiEntry(String id, String color, String symbol, String brknColor, String brknSymbol) {
 		this.id = id;
 		this.symbol = symbol.charAt(0);
-		this.multitile = false;
-		this.overlay = false;
+		multitile = false;
+		overlay = false;
 
 		Color fg = Color.WHITE;
 		Color bg = null;
@@ -408,131 +510,16 @@ public class AsciiEntry {
 		broken_symbol = brknSymbol.charAt(0);
 	}
 
-	public BufferedImage createAsciiTile(int width, int height, BufferedImage tiles) {
-			
-		return createAsciiTile(width, height, new char[] { symbol }, color, bgcolor, tiles);
+	public BufferedImage createAsciiTile(int width, int height) {
+		return createAsciiTile(width, height, new char[] { symbol }, color, bgcolor);
 	}
 
-	public BufferedImage createAsciiTile(int width, int height, int tileID, BufferedImage tiles) {
-		return createAsciiTile(width, height, new char[] { (char)tileID }, color, bgcolor, tiles);
+	public BufferedImage createAsciiTile(int width, int height, int tileID) {
+		return createAsciiTile(width, height, new char[] { (char) tileID }, color, bgcolor);
 	}
 
-	private static BufferedImage createAsciiTile(int width, int height, char[] chr, Color fg, Color bg, BufferedImage tiles) {
-		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-		if(fg == null) {
-			return image;
-		}
-		
-		Graphics2D gfx = image.createGraphics();
-
-		gfx.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		gfx.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		gfx.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		gfx.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		gfx.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-		gfx.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-		if(tiles == null){
-				// Something like this...
-			Font font = new Font(Font.MONOSPACED, Font.BOLD, height - 2);
-			gfx.setFont(font);
-
-			GlyphVector vec = font.createGlyphVector(gfx.getFontRenderContext(), chr);
-			Rectangle2D rect = vec.getGlyphVisualBounds(0).getBounds2D();
-
-			float yOffset = (float) -rect.getY();
-
-			// center it
-			float x = (float) ((width >> 1) - rect.getWidth() / 2.0);
-			float y = (float) ((height >> 1) - rect.getHeight() / 2.0);
-
-			gfx.translate(x, y + yOffset);
-
-			// TODO scale it so we are sure it fits
-			if(bg != null) {
-			gfx.setColor(bg);
-			gfx.drawGlyphVector(vec, -1, -1);
-			gfx.drawGlyphVector(vec, 1, -1);
-			gfx.drawGlyphVector(vec, -1, 1);
-			gfx.drawGlyphVector(vec, 1, 1);
-			}
-
-			gfx.setColor(fg);
-			gfx.drawGlyphVector(vec, 0, 0);
-		}else
-		{
-			//rectangle fill the background
-			if(bg != null) {
-			gfx.setColor(bg);
-			gfx.fillRect(0, 0, width, height);	
-			}
-			
-			//load the required ASCII tile
-			BufferedImage tileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-			//the tile ID is the codepage code of the character.
-			char cha = new String(chr).charAt(0);
-			int tileID = (int)cha;
-			//get row number by dividing by 16, rounding down
-			int ty = (int) Math.floor(tileID / 16);
-			//get column number by subtracting ty*16 from tile ID
-			int tx = tileID - (ty * 16); //i.e. 255/16 = 15.9375 (ty=15), tx=255-(16*15=240)=15 - bottom right corner of 16x16 page with zero-based index
-			
-			//tile graphic is offset by tx*width and ty*height, and is width and height in size
-
-			//Graphics2D tg = tileGraphic.createGraphics();
-			//tg.drawImage(tiles, 0, 0, width, height, tx * width, ty * height, (tx * width)+width, (ty * height)+height, null);
-			//tg.dispose();
-			
-			tileGraphic = tiles.getSubimage(tx*width,ty*height,width,height);
-			BufferedImage ColorTileGraphic = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-			
-			//JLabel picLabel = new JLabel(new ImageIcon(tileGraphic));
-			//JOptionPane.showMessageDialog(null, picLabel, String.valueOf(tx)+" "+String.valueOf(ty), JOptionPane.PLAIN_MESSAGE, null);
-			
-			//go through it pixel by pixel
-			for (int x = 0; x < width; x++)
-			{
-				for (int y = 0; y < height; y++)
-				{
-				int pixel = tileGraphic.getRGB(x,y);
-				int red = (pixel & 0x00ff0000) >> 16;
-				int green = (pixel & 0x0000ff00) >> 8;
-				int blue = pixel & 0x000000ff;
-				int alpha = (pixel >> 24) & 0xFF;
-				//if pixel alpha is zero, do nothing
-				if (alpha==0){ 
-				continue;
-				}
-				//if pixel R/G/B not equal, copy over unchanged
-				if (!((red==green)&&(green==blue))){ 
-				ColorTileGraphic.setRGB(x,y,pixel);
-				}else{
-				//if equal, assign it fg color RGB values divided by (256/R)
-				Color c = new Color(0,0,0, alpha);
-				if(red!=0){
-				float greyoffset = 255 / red;
-				int newred = (int)(fg.getRed()/greyoffset);
-				int newgreen = (int)(fg.getGreen()/greyoffset);
-				int newblue = (int)(fg.getBlue()/greyoffset);
-				//JOptionPane.showMessageDialog(null,String.valueOf(newred)+" "+String.valueOf(newgreen)+" "+String.valueOf(newblue)+" "+String.valueOf(alpha)+" "+String.valueOf(greyoffset));
-				c = new Color(newred, newgreen, newblue, alpha);
-				}
-				ColorTileGraphic.setRGB(x, y, c.getRGB());
-				}
-				}
-			}
-			//apply to tile
-			gfx.drawImage(ColorTileGraphic, 0, 0, null);
-		}
-		//gfx.finalize();
-		gfx.dispose();
-
-		return image;
-	}
-
-	public BufferedImage createBrokenAsciiTile(int width, int height, BufferedImage tiles) {
-		return createAsciiTile(width, height, new char[] { symbol }, brkn_color, brkn_bgcolor, tiles);
+	public BufferedImage createBrokenAsciiTile(int width, int height) {
+		return createAsciiTile(width, height, new char[] { symbol }, brkn_color, brkn_bgcolor);
 	}
 
 	@Override
@@ -548,15 +535,17 @@ public class AsciiEntry {
 	public boolean hasBrokenTile() {
 		return brkn_color != null;
 	}
-	public boolean isMultitile() {
-		return multitile;
-	}
-	public boolean isOverlay() {
-		return overlay;
-	}
 
 	@Override
 	public int hashCode() {
 		return id.hashCode();
+	}
+
+	public boolean isMultitile() {
+		return multitile;
+	}
+
+	public boolean isOverlay() {
+		return overlay;
 	}
 }

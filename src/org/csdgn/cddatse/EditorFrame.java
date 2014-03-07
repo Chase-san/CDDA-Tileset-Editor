@@ -39,6 +39,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -52,53 +53,12 @@ import org.csdgn.cddatse.data.BaseTile;
 import org.csdgn.cddatse.data.GFX;
 import org.csdgn.cddatse.data.InternalTile;
 import org.csdgn.cddatse.data.TileInfo;
-import org.csdgn.maru.io.EqualsFileFilter;
 import org.csdgn.maru.io.EndsWithFileFilter;
+import org.csdgn.maru.io.EqualsFileFilter;
 import org.csdgn.maru.swing.ArrayListModel;
 import org.csdgn.maru.util.Tuple;
 
-import javax.swing.UIManager;
-
 public class EditorFrame extends JFrame {
-	private static final long serialVersionUID = -4047187015916073121L;
-	private AboutDialog about = new AboutDialog();
-	private JPanel blankPanel = new JPanel();
-	private JButton btnAdd;
-	private JButton btnSort;
-	private JButton btnSub;
-	private JPanel contentPane;
-	private CreateDialog create;
-	private JList<InternalTile> list;
-	private ArrayListModel<InternalTile> listModel;
-	private JPanel listPanel;
-	private JMenuItem miOptimize;
-	private boolean opened = false;
-	private File outputFolder;
-	private JFileChooser saveChooser = null;
-
-	private boolean savedBefore = false;
-	private boolean searching = false;
-	private ArrayListModel<InternalTile> searchListModel;
-	private String searchString = "";
-	private TilePanel tilePanel;
-
-	private MergeConflictDialog mcDialog;
-	private OptionsDialog options;
-
-	private JScrollPane tileScrollPane;
-	private JFileChooser tilesetChooser = null;
-	private JTextField txtSearch;
-	private JMenuItem miImport;
-	private JMenuItem miSave;
-	private JMenuItem miSaveAs;
-	private JMenuItem miCombineIdenticalImages;
-	private JMenuItem miAddMissingTiles;
-
-	private HashMap<String, Integer> nameMap = new HashMap<String, Integer>();
-	private JMenuItem mntmOptions;
-	private JMenuItem miGenerateAsciiTiles;
-	private JMenuItem miGenerateAsciiTilesBG;
-
 	private static class InternalTileCellRenderer extends JLabel implements ListCellRenderer<InternalTile> {
 		private static final long serialVersionUID = 468626665326983329L;
 
@@ -131,11 +91,45 @@ public class EditorFrame extends JFrame {
 		}
 	}
 
-	private void doPostShow() {
-		if(Options.cataclysmDirectory == null) {
-			doShowOptions();
-		}
-	}
+	private static final long serialVersionUID = -4047187015916073121L;
+	private AboutDialog about = new AboutDialog();
+	private JPanel blankPanel = new JPanel();
+	private JButton btnAdd;
+	private JButton btnSort;
+	private JButton btnSub;
+	private JPanel contentPane;
+	private CreateDialog create;
+	private JList<InternalTile> list;
+	private ArrayListModel<InternalTile> listModel;
+	private JPanel listPanel;
+	private MergeConflictDialog mcDialog;
+	private JMenuItem miAddMissingTiles;
+	private JMenuItem miCombineIdenticalImages;
+
+	private JMenuItem miGenerateAsciiTiles;
+	private JMenuItem miGenerateAsciiTilesBG;
+	private JMenuItem miImport;
+	private JMenuItem miOptimize;
+	private JMenuItem miSave;
+
+	private JMenuItem miSaveAs;
+	private JMenuItem mntmOptions;
+
+	private HashMap<String, Integer> nameMap = new HashMap<String, Integer>();
+	private boolean opened = false;
+	private OptionsDialog options;
+	private File outputFolder;
+	private JFileChooser saveChooser = null;
+	private boolean savedBefore = false;
+	private boolean searching = false;
+	private ArrayListModel<InternalTile> searchListModel;
+
+	private String searchString = "";
+	private TilePanel tilePanel;
+	private JScrollPane tileScrollPane;
+	private JFileChooser tilesetChooser = null;
+
+	private JTextField txtSearch;
 
 	/**
 	 * Create the frame.
@@ -431,6 +425,7 @@ public class EditorFrame extends JFrame {
 		miCombineIdenticalImages = new JMenuItem("Merge identical tiles");
 		miCombineIdenticalImages.setMnemonic(KeyEvent.VK_M);
 		miCombineIdenticalImages.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				doMergeTiles();
 			}
@@ -439,6 +434,7 @@ public class EditorFrame extends JFrame {
 
 		miAddMissingTiles = new JMenuItem("Add missing tiles");
 		miAddMissingTiles.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				doAddMissingIds();
 			}
@@ -451,29 +447,31 @@ public class EditorFrame extends JFrame {
 
 		miGenerateAsciiTiles = new JMenuItem("Generate ascii tiles");
 		miGenerateAsciiTiles.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				doGenerateAsciiTiles(false);
 			}
 		});
 		miGenerateAsciiTiles.setToolTipText("Generates ascii tiles for entries that have no tiles at all. NOT PERFECT!");
 		mnEdit.add(miGenerateAsciiTiles);
-		
+
 		miGenerateAsciiTilesBG = new JMenuItem("Generate ascii tiles /w bg");
 		miGenerateAsciiTilesBG.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				doGenerateAsciiTiles(true);
 			}
 		});
-		miGenerateAsciiTilesBG.setToolTipText("Generates ascii tiles for entries that have no tiles at all. Generates a black background for these tiles as well. NOT PERFECT!");
-		
+		miGenerateAsciiTilesBG
+				.setToolTipText("Generates ascii tiles for entries that have no tiles at all. Generates a black background for these tiles as well. NOT PERFECT!");
+
 		mnEdit.add(miGenerateAsciiTilesBG);
-		
-		
 
 		mnEdit.addSeparator();
 
 		mntmOptions = new JMenuItem("Options");
 		mntmOptions.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				doShowOptions();
 			}
@@ -496,6 +494,20 @@ public class EditorFrame extends JFrame {
 		mnHelp.add(miAbout);
 
 		return menuBar;
+	}
+
+	private int decNameMap(String id) {
+		Integer count = nameMap.get(id);
+		if(count == null) {
+			return 0;
+		}
+		--count;
+		if(count <= 0) {
+			nameMap.remove(id);
+			return 0;
+		}
+		nameMap.put(id, count);
+		return count;
 	}
 
 	private void disableInterface() {
@@ -540,6 +552,127 @@ public class EditorFrame extends JFrame {
 		listModel.fireUpdate();
 	}
 
+	private void doGenerateAsciiTiles(boolean withBG) {
+		HashMap<String, AsciiEntry> entries = getAsciiEntries();
+
+		ArrayList<InternalTile> list = listModel.getList();
+
+		GFX gfx = GFX.instance;
+
+		BufferedImage tilesToUse = getAsciiTileset();
+		TileInfo info = GFX.instance.getTileInfo();
+
+		if(tilesToUse == null) {
+			int dialogBtn = JOptionPane.YES_NO_OPTION;
+			int tileCheckDlg = JOptionPane.showConfirmDialog(null,
+					"No tilepage selected - would you like to generate font-based ASCII tiles instead?", "Continue anyway?", dialogBtn);
+			if(tileCheckDlg == JOptionPane.NO_OPTION) {
+				return;
+			}
+		} else {
+			if(tilesToUse.getWidth() != info.width * 16 || tilesToUse.getHeight() != info.height * 16) {
+				AppToolkit.showError(this, "Tilepage dimensions do not match loaded tileset! Must be " + String.valueOf(info.width * 16)
+						+ "x" + String.valueOf(info.height * 16) + " pixels.");
+				return;
+			}
+		}
+
+		BufferedImage bg = new BufferedImage(info.width, info.height, BufferedImage.TYPE_INT_RGB);
+
+		if(withBG) {
+			Graphics2D gx = bg.createGraphics();
+			gx.setColor(Color.BLACK);
+			gx.fillRect(0, 0, info.width, info.height);
+			gx.dispose();
+
+			gfx.images.add(bg);
+		}
+
+		for(InternalTile tile : list) {
+			if(tile.isImageless()) {
+				AsciiEntry e = entries.get(tile.id);
+				if(e != null) {
+					BufferedImage img = e.createAsciiTile(info.width, info.height, tilesToUse);
+
+					gfx.images.add(img);
+					tile.image.first = img;
+					if(withBG && !e.isOverlay()) {
+						tile.image.second = bg;
+					}
+					if(e.isMultitile()) {
+						// let'sa go!
+						// center
+						// JOptionPane.showMessageDialog(null,e.id);
+						img = e.createAsciiTile(info.width, info.height, 197, tilesToUse);
+						gfx.images.add(img);
+						tile.center = true;
+						tile.centerImage.first = img;
+						if(withBG) {
+							tile.centerImage.second = bg;
+						}
+						// corner
+						img = e.createAsciiTile(info.width, info.height, 218, tilesToUse);
+						gfx.images.add(img);
+						tile.corner = true;
+						tile.cornerImage.first = img;
+						if(withBG) {
+							tile.cornerImage.second = bg;
+						}
+						// edge
+						img = e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.edge = true;
+						tile.edgeImage.first = img;
+						if(withBG) {
+							tile.edgeImage.second = bg;
+						}
+						// tConnection
+						img = e.createAsciiTile(info.width, info.height, 194, tilesToUse);
+						gfx.images.add(img);
+						tile.tConnection = true;
+						tile.tConnectionImage.first = img;
+						if(withBG) {
+							tile.tConnectionImage.second = bg;
+						}
+						// end_piece
+						img = e.createAsciiTile(info.width, info.height, 179, tilesToUse);
+						gfx.images.add(img);
+						tile.endPiece = true;
+						tile.endPieceImage.first = img;
+						if(withBG) {
+							tile.endPieceImage.second = bg;
+						}
+						// unconnected
+						img = e.createAsciiTile(info.width, info.height, 254, tilesToUse);
+						gfx.images.add(img);
+						tile.unconnected = true;
+						tile.unconnectedImage.first = img;
+						if(withBG) {
+							tile.unconnectedImage.second = bg;
+						}
+
+					}
+					if(e.id.startsWith("vp_")) {
+						tile.rotates = true;
+					}
+					if(e.hasBrokenTile()) {
+						img = e.createBrokenAsciiTile(info.width, info.height, tilesToUse);
+						gfx.images.add(img);
+						tile.broken = true;
+						tile.brokenImage.first = img;
+						if(withBG) {
+							tile.brokenImage.second = bg;
+						}
+					}
+				}
+			} else if(entries.get(tile.id) == null) {
+				System.out.println("Nothing for '" + tile.id + "'.");
+			}
+		}
+
+		listModel.fireUpdate();
+	}
+
 	private void doImport() {
 		File file = browseForTileset();
 
@@ -575,8 +708,9 @@ public class EditorFrame extends JFrame {
 
 		updateGFXTiles();
 
-		for(BaseTile tile : ours.tileset.tiles)
+		for(BaseTile tile : ours.tileset.tiles) {
 			map.put(tile.id, tile);
+		}
 
 		for(BaseTile tile : theirs.tileset.tiles) {
 			if(map.containsKey(tile.id)) {
@@ -598,8 +732,9 @@ public class EditorFrame extends JFrame {
 				break;
 			case MergeConflictDialog.OPTION_THEIRS:
 				// for every item in the duplicate map
-				for(Tuple<BaseTile> dup : duplicates)
+				for(Tuple<BaseTile> dup : duplicates) {
 					ours.replaceTile(dup.first, theirs, dup.second);
+				}
 				break;
 			case MergeConflictDialog.OPTION_MANUAL:
 				// TODO
@@ -609,196 +744,6 @@ public class EditorFrame extends JFrame {
 
 		updateInternalTiles();
 
-	}
-
-	private HashMap<String, AsciiEntry> getAsciiEntries() {
-		File dataFolder = new File(Options.cataclysmDirectory, "data");
-		File jsonFolder = new File(dataFolder, "json");
-
-		HashMap<String, AsciiEntry> entries = new HashMap<String, AsciiEntry>();
-		
-		AsciiEntry.getAllAsciiTiles(jsonFolder, entries);
-		return entries;
-	}
-	
-	private BufferedImage getAsciiTileset() {
-			JFileChooser imageChooser = null;
-			AppToolkit.setFileChooserReadOnly(true);
-			imageChooser = new JFileChooser();
-			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
-			imageChooser.addChoosableFileFilter(filter);
-			imageChooser.setFileFilter(filter);
-			imageChooser.setDialogTitle("Select ASCII tile page:");
-
-		
-		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
-
-		if (imageChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-			return null;
-		}
-		
-		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
-
-		File file = imageChooser.getSelectedFile();
-		if (!file.exists()) {
-			return null;
-		}
-
-		try {
-			return ImageIO.read(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	
-	private void doGenerateAsciiTiles(boolean withBG) {
-		HashMap<String, AsciiEntry> entries = getAsciiEntries();
-
-		ArrayList<InternalTile> list = listModel.getList();
-		
-		GFX gfx = GFX.instance;
-		
-		BufferedImage tilesToUse = getAsciiTileset();
-		TileInfo info = GFX.instance.getTileInfo();
-		
-		if(tilesToUse == null) {
-			int dialogBtn = JOptionPane.YES_NO_OPTION;
-			int tileCheckDlg = JOptionPane.showConfirmDialog(null,"No tilepage selected - would you like to generate font-based ASCII tiles instead?","Continue anyway?",dialogBtn);
-			if(tileCheckDlg == JOptionPane.NO_OPTION){
-			return;}
-		}
-		else{
-			if(tilesToUse.getWidth() != info.width*16 || tilesToUse.getHeight() != info.height*16) {
-				AppToolkit.showError(this, "Tilepage dimensions do not match loaded tileset! Must be "+String.valueOf(info.width*16)+"x"+String.valueOf(info.height*16)+" pixels.");
-			return;}
-		}
-
-		BufferedImage bg = new BufferedImage(info.width,info.height,BufferedImage.TYPE_INT_RGB);
-		
-		
-		if(withBG) {
-			Graphics2D gx = bg.createGraphics();
-			gx.setColor(Color.BLACK);
-			gx.fillRect(0, 0, info.width, info.height);
-			gx.dispose();
-			
-			gfx.images.add(bg);
-		}
-
-		for(InternalTile tile : list) {
-			if(tile.isImageless()) {
-				AsciiEntry e = entries.get(tile.id);
-				if(e != null) {
-					BufferedImage img = e.createAsciiTile(info.width, info.height, tilesToUse);
-
-					gfx.images.add(img);
-					tile.image.first = img;
-					if(withBG && !e.isOverlay())
-						tile.image.second = bg;
-					if(e.isMultitile()) {
-						//let'sa go!
-						//center
-						//JOptionPane.showMessageDialog(null,e.id);
-						img=e.createAsciiTile(info.width, info.height, 197, tilesToUse);
-						gfx.images.add(img);
-						tile.center = true;
-						tile.centerImage.first = img;
-						if(withBG)
-							tile.centerImage.second = bg;
-						//corner
-						img=e.createAsciiTile(info.width, info.height, 218, tilesToUse);
-						gfx.images.add(img);
-						tile.corner = true;
-						tile.cornerImage.first = img;
-						if(withBG)
-							tile.cornerImage.second = bg;
-						//edge
-						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
-						gfx.images.add(img);
-						tile.edge = true;
-						tile.edgeImage.first = img;
-						if(withBG)
-							tile.edgeImage.second = bg;
-						//tConnection
-						img=e.createAsciiTile(info.width, info.height, 194, tilesToUse);
-						gfx.images.add(img);
-						tile.tConnection = true;
-						tile.tConnectionImage.first = img;
-						if(withBG)
-							tile.tConnectionImage.second = bg;
-						//end_piece
-						img=e.createAsciiTile(info.width, info.height, 179, tilesToUse);
-						gfx.images.add(img);
-						tile.endPiece = true;
-						tile.endPieceImage.first = img;
-						if(withBG)
-							tile.endPieceImage.second = bg;
-						//unconnected
-						img=e.createAsciiTile(info.width, info.height, 254, tilesToUse);
-						gfx.images.add(img);
-						tile.unconnected = true;
-						tile.unconnectedImage.first = img;
-						if(withBG)
-							tile.unconnectedImage.second = bg;
-						
-					}
-					if(e.id.startsWith("vp_")) tile.rotates = true;
-					if(e.hasBrokenTile()) {
-						img = e.createBrokenAsciiTile(info.width, info.height, tilesToUse);
-						gfx.images.add(img);
-						tile.broken = true;
-						tile.brokenImage.first = img;
-						if(withBG)
-							tile.brokenImage.second = bg;
-					}
-				}
-			} else if(entries.get(tile.id) == null) {
-				System.out.println("Nothing for '"+tile.id+"'.");
-			}
-		}
-
-		listModel.fireUpdate();
-	}
-
-	private void doOpen() {
-		File file = browseForTileset();
-
-		if(file == null) {
-			return;
-		}
-
-		if(!file.exists()) {
-			AppToolkit.showError(this, "File not found!");
-			return;
-		}
-
-		GFX tmp = GFX.load(file);
-
-		if(tmp == null) {
-			AppToolkit.showError(this, "Failed to load Tileset!");
-			return;
-		}
-
-		reset();
-
-		GFX.instance = tmp;
-
-		opened = true;
-		outputFolder = file.getParentFile();
-
-		updateInternalTiles();
-
-		updateIDList();
-
-		enableInterface();
-	}
-
-	private void doOptimize() {
-		updateGFXTiles();
-		GFX.instance.optimize();
-		updateInternalTiles();
 	}
 
 	private void doMergeTiles() {
@@ -822,8 +767,9 @@ public class EditorFrame extends JFrame {
 				dialog.setLabelText("Locating duplicate images.");
 				dialog.setProgressMaximum(ref.size());
 				for(int i = 0; i < ref.size() - 1; ++i) {
-					if(shiftMap.containsKey(i))
+					if(shiftMap.containsKey(i)) {
 						continue;
+					}
 					for(int j = i + 1; j < ref.size(); ++j) {
 						if(AppToolkit.isEqual(ref.get(i), ref.get(j))) {
 							shiftMap.put(j, i);
@@ -880,6 +826,51 @@ public class EditorFrame extends JFrame {
 
 		updateInternalTiles();
 		enableInterface();
+	}
+
+	private void doOpen() {
+		File file = browseForTileset();
+
+		if(file == null) {
+			return;
+		}
+
+		if(!file.exists()) {
+			AppToolkit.showError(this, "File not found!");
+			return;
+		}
+
+		GFX tmp = GFX.load(file);
+
+		if(tmp == null) {
+			AppToolkit.showError(this, "Failed to load Tileset!");
+			return;
+		}
+
+		reset();
+
+		GFX.instance = tmp;
+
+		opened = true;
+		outputFolder = file.getParentFile();
+
+		updateInternalTiles();
+
+		updateIDList();
+
+		enableInterface();
+	}
+
+	private void doOptimize() {
+		updateGFXTiles();
+		GFX.instance.optimize();
+		updateInternalTiles();
+	}
+
+	private void doPostShow() {
+		if(Options.cataclysmDirectory == null) {
+			doShowOptions();
+		}
 	}
 
 	private void doSave() {
@@ -1002,6 +993,56 @@ public class EditorFrame extends JFrame {
 		}
 	}
 
+	private HashMap<String, AsciiEntry> getAsciiEntries() {
+		File dataFolder = new File(Options.cataclysmDirectory, "data");
+		File jsonFolder = new File(dataFolder, "json");
+
+		HashMap<String, AsciiEntry> entries = new HashMap<String, AsciiEntry>();
+
+		AsciiEntry.getAllAsciiTiles(jsonFolder, entries);
+		return entries;
+	}
+
+	private BufferedImage getAsciiTileset() {
+		JFileChooser imageChooser = null;
+		AppToolkit.setFileChooserReadOnly(true);
+		imageChooser = new JFileChooser();
+		FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
+		imageChooser.addChoosableFileFilter(filter);
+		imageChooser.setFileFilter(filter);
+		imageChooser.setDialogTitle("Select ASCII tile page:");
+
+		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
+
+		if(imageChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+			return null;
+		}
+
+		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
+
+		File file = imageChooser.getSelectedFile();
+		if(!file.exists()) {
+			return null;
+		}
+
+		try {
+			return ImageIO.read(file);
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private int incNameMap(String id) {
+		Integer count = nameMap.get(id);
+		if(count == null) {
+			count = 0;
+		}
+		++count;
+		nameMap.put(id, count);
+		return count;
+	}
+
 	private void onListSelected(int index) {
 		ArrayListModel<InternalTile> model = listModel;
 		if(searching) {
@@ -1049,45 +1090,15 @@ public class EditorFrame extends JFrame {
 		}
 	}
 
-	protected boolean updateTileId(String oldId, String newId) {
-		if(oldId != null) {
-			decNameMap(oldId);
-			return incNameMap(newId) == 1;
-		}
-		Integer count = nameMap.get(newId);
-		if(count == null || count <= 1)
-			return true;
-
-		return false;
-	}
-
-	private int incNameMap(String id) {
-		Integer count = nameMap.get(id);
-		if(count == null)
-			count = 0;
-		++count;
-		nameMap.put(id, count);
-		return count;
-	}
-
-	private int decNameMap(String id) {
-		Integer count = nameMap.get(id);
-		if(count == null)
-			return 0;
-		--count;
-		if(count <= 0) {
-			nameMap.remove(id);
-			return 0;
-		}
-		nameMap.put(id, count);
-		return count;
+	protected void updateIDList() {
+		list.repaint();
 	}
 
 	private void updateInternalTiles() {
 		// convert basetiles to internal tiles
 		ArrayList<InternalTile> list = listModel.getList();
 		list.clear();
-		
+
 		nameMap.clear();
 		for(BaseTile tile : GFX.instance.tileset.tiles) {
 			// add these base tiles to list
@@ -1100,7 +1111,16 @@ public class EditorFrame extends JFrame {
 		listModel.fireUpdate();
 	}
 
-	protected void updateIDList() {
-		list.repaint();
+	protected boolean updateTileId(String oldId, String newId) {
+		if(oldId != null) {
+			decNameMap(oldId);
+			return incNameMap(newId) == 1;
+		}
+		Integer count = nameMap.get(newId);
+		if(count == null || count <= 1) {
+			return true;
+		}
+
+		return false;
 	}
 }
