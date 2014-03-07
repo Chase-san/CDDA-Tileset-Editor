@@ -10,8 +10,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
+
+import org.csdgn.maru.io.EndsWithFileFilter;
 
 public class AppToolkit {
 	public static void setFileChooserReadOnly(boolean readOnly) {
@@ -132,6 +136,10 @@ public class AppToolkit {
 		return JOptionPane.showConfirmDialog(owner, message, "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 	}
 	
+	public static int showYesNoOption(Component owner, String message, String title) {
+		return JOptionPane.showConfirmDialog(owner, message, title, JOptionPane.YES_NO_OPTION);
+	}
+	
 	public static boolean isEqual(BufferedImage a, BufferedImage b) {
 		int width = a.getWidth();
 		int height = a.getHeight();
@@ -145,5 +153,39 @@ public class AppToolkit {
         }
 		
 		return true;
+	}
+	
+
+	private static JFileChooser imageChooser = null;
+	public static BufferedImage browseForImage(Component parent, String title) {
+		if (imageChooser == null) {
+			AppToolkit.setFileChooserReadOnly(true);
+			imageChooser = new JFileChooser();
+			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
+			imageChooser.addChoosableFileFilter(filter);
+			imageChooser.setFileFilter(filter);
+		}
+		
+		imageChooser.setDialogTitle(title);
+		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
+
+		if (imageChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) {
+			return null;
+		}
+		
+		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
+
+		File file = imageChooser.getSelectedFile();
+		if (!file.exists()) {
+			return null;
+		}
+
+		try {
+			return ImageIO.read(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }

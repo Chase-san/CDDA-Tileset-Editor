@@ -61,8 +61,6 @@ public class TileChooser extends JDialog {
 	public static final int OPTION_OK = 2;
 	public static final int OPTION_REMOVE = 1;
 
-	private JFileChooser imageChooser = null;
-
 	private static final long serialVersionUID = -7024147904031885972L;
 
 	private BufferedImage image = null;
@@ -229,7 +227,7 @@ public class TileChooser extends JDialog {
 	}
 
 	private void openTileset() {
-		BufferedImage img = browseForImage();
+		BufferedImage img = AppToolkit.browseForImage(this,"Select Tileset");
 		// cut up image
 		if (img != null) {
 			TileInfo info = GFX.instance.getTileInfo();
@@ -282,7 +280,7 @@ public class TileChooser extends JDialog {
 	}
 
 	private void openSingleTile() {
-		BufferedImage img = browseForImage();
+		BufferedImage img = AppToolkit.browseForImage(this,"Select Tile");
 		if (img != null) {
 			tileList.clearSelection();
 			setSelectedImage(img);
@@ -293,35 +291,7 @@ public class TileChooser extends JDialog {
 		}
 	}
 
-	private BufferedImage browseForImage() {
-		if (imageChooser == null) {
-			AppToolkit.setFileChooserReadOnly(true);
-			imageChooser = new JFileChooser();
-			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
-			imageChooser.addChoosableFileFilter(filter);
-			imageChooser.setFileFilter(filter);
-		}
-		
-		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
 
-		if (imageChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-			return null;
-		}
-		
-		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
-
-		File file = imageChooser.getSelectedFile();
-		if (!file.exists()) {
-			return null;
-		}
-
-		try {
-			return ImageIO.read(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 
 	public BufferedImage getSelectedImage() {
 		return image;
