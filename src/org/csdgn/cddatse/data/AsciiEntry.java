@@ -111,6 +111,9 @@ public class AsciiEntry {
 	}
 	
 	private static BufferedImage createAsciiFromTileset(int width, int height, char[] chr, Color fg, Color bg, BufferedImage tiles) {
+		if(tiles == null)
+			return createAsciiTile(width,height,chr,fg,bg);
+		
 		BufferedImage image = generateEmptyTileImage(width,height);
 		
 		if(fg == null)
