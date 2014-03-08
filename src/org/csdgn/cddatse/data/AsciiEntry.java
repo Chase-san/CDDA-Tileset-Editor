@@ -463,7 +463,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -497,7 +497,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -534,7 +534,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -557,7 +557,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
