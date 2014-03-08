@@ -136,7 +136,9 @@ public class AsciiEntry {
 		if(bg != null)
 			bgRGB = bg.getRGB();
 		
-		//draw the tile onto the image, swapping out black for bg, and white for fg
+		//okay, so new plan
+		//copy image as is, altering grayscale colors and keeping non-grayscale
+		//excepting the designated back color - 0xFF00FF, true pink
 		for(int y = 0; y < height; ++y) {
 			for(int x = 0; x < width; ++x) {
 				int srcRGB = src.getRGB(x, y);
@@ -144,14 +146,23 @@ public class AsciiEntry {
 				int r = srcRGB >> 16 & 0xFF;
 				int g = srcRGB >> 8 & 0xFF;
 				int b = srcRGB & 0xFF;
-				if(a == 0) {
-					if(bgRGB == -1) continue;
-					image.setRGB(x, y, bgRGB); //transparency must not override back color
-					continue;
-				}
+				if(a == 0) continue;
 				srcRGB &= 0xFFFFFF;
 				
 				int dstRGB = 0;
+				
+				//the check for non-grayscale color will copy color anyway
+				//so assign srcRGB to back color if srcRGB used to be true pink
+				//but if at the same time bg is null, make alpha 0 instead. 
+				//This will allow the same color to work as both transparency
+				//and BG mask depending on the tile.
+				if(srcRGB == 16711935) { //Dec value of Hex ff00ff, assuming "srcRGB &= 0xFFFFFF" strips alpha
+					if(bg != null) {
+						srcRGB = bgRGB;
+					} else {
+						a = 0;
+					}
+				}
 				if((r&g&b) != (r|g|b)) {
 					dstRGB = srcRGB;
 				} else {
@@ -167,7 +178,7 @@ public class AsciiEntry {
 					else if(srcRGB == 0)
 						a = 0;
 					
-					dstRGB |= a << 24; //adding original alpha here does not help if there is background color
+					dstRGB |= a << 24;
 
 				}
 				//This is slow
