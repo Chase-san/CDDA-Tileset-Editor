@@ -151,35 +151,45 @@ public class AsciiEntry {
 				
 				int dstRGB = 0;
 				
-				//the check for non-grayscale color will copy color anyway
-				//so assign srcRGB to back color if srcRGB used to be true pink
-				//but if at the same time bg is null, make alpha 0 instead. 
-				//This will allow the same color to work as both transparency
-				//and BG mask depending on the tile.
-				if(srcRGB == 16711935) { //Dec value of Hex ff00ff, assuming "srcRGB &= 0xFFFFFF" strips alpha
-					if(bg != null) {
-						srcRGB = bgRGB;
-					} else {
-						a = 0;
-					}
-				}
 				if((r&g&b) != (r|g|b)) {
-					dstRGB = srcRGB;
+					//our alpha/back mask is a shade of pink/purple
+					if(r == b && g < r) { //16711935 Dec value of Hex ff00ff
+						int r2 = fg.getRed() * r / 255;
+						int g2 = fg.getGreen() * r / 255;
+						int b2 = fg.getBlue() * r / 255;
+						if(bg != null) {
+							//with a background, the shade or pink determines the
+							//proportion of fore and background in the mix
+							//grayer color (G closer to R) gets less background
+							
+							int r3 = bg.getRed() * (r / (r - g));	//the mix proportion is the difference between R and G.
+							int g3 = bg.getGreen() * (r / (r - g)); //more red, more BG
+							int b3 = bg.getBlue() * (r / (r - g));  //
+							r2 = r3 + (r2 / r * g);//more green, more FG
+							g2 = g3 + (g2 / r * g);
+							b2 = b3 + (b2 / r * g);
+														
+							//dstRGB = (int) ((long)dstRGB+bgRGB*(255-a)/255);
+							dstRGB = (r2 << 16) | (g2 << 8) | b2;
+							dstRGB |= a << 24;
+							
+						} else {
+							//without a background, the shade of pink modifies alpha
+							a = a * g / r; //because of entry clause r > g, g > 0 as a color component - no div0 here
+							
+							dstRGB = (r2 << 16) | (g2 << 8) | b2;
+							dstRGB |= a << 24;
+						}
+					}//end if(r == b && g < r)
 				} else {
+					//plain grayscale is plain hue shifted
 					//most CPUs eat integer math alive, so, let's use that
 					int r2 = fg.getRed() * r / 255;
 					int g2 = fg.getGreen() * r / 255;
 					int b2 = fg.getBlue() * r / 255;
 					
 					dstRGB = (r2 << 16) | (g2 << 8) | b2;
-					//Just a little compositing
-					if(bgRGB != -1)
-						dstRGB = (int) ((long)dstRGB+bgRGB*(255-a)/255);
-					else if(srcRGB == 0)
-						a = 0;
-					
 					dstRGB |= a << 24;
-
 				}
 				//This is slow
 				image.setRGB(x, y, dstRGB);
