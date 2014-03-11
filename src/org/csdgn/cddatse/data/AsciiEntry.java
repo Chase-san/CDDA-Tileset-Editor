@@ -20,11 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class AsciiEntry {
-	private static final Color[] colors = new Color[] { new Color(0, 0, 0), new Color(255, 0, 0), new Color(0, 110, 0),
-			new Color(92, 51, 23), new Color(0, 0, 200), new Color(139, 58, 98), new Color(0, 150, 180), new Color(150, 150, 150),
-			new Color(150, 150, 150), new Color(99, 99, 99), new Color(99, 99, 99), new Color(255, 150, 150), new Color(255, 150, 150),
-			new Color(0, 255, 0), new Color(0, 255, 0), new Color(190, 190, 0), new Color(100, 100, 255), new Color(100, 100, 255),
-			new Color(255, 0, 255), new Color(0, 240, 255), new Color(0, 240, 255), new Color(255, 255, 255) };
+	private static Color[] colors = new Color[22];
 	private static final String[] colorStrings = new String[] { "BLACK", "RED", "GREEN", "BROWN", "BLUE", "MAGENTA", "CYAN", "LTGRAY",
 			"LIGHT_GRAY", "DKGRAY", "DARK_GRAY", "LTRED", "LIGHT_RED", "LTGREEN", "LIGHT_GREEN", "YELLOW", "LTBLUE", "LIGHT_BLUE", "PINK",
 			"LTCYAN", "LIGHT_CYAN", "WHITE" };
@@ -136,7 +132,9 @@ public class AsciiEntry {
 		if(bg != null)
 			bgRGB = bg.getRGB();
 		
-		//draw the tile onto the image, swapping out black for bg, and white for fg
+		//okay, so new plan
+		//copy image as is, altering grayscale colors and keeping non-grayscale
+		//excepting the designated back color - 0xFF00FF, true pink
 		for(int y = 0; y < height; ++y) {
 			for(int x = 0; x < width; ++x) {
 				int srcRGB = src.getRGB(x, y);
@@ -148,23 +146,49 @@ public class AsciiEntry {
 				srcRGB &= 0xFFFFFF;
 				
 				int dstRGB = 0;
+				
 				if((r&g&b) != (r|g|b)) {
-					dstRGB = srcRGB;
+					//our alpha/back mask is a shade of pink/purple
+					if(r == b && g < r) { //16711935 Dec value of Hex ff00ff
+						int r2 = fg.getRed() * r / 255;
+						int g2 = fg.getGreen() * r / 255;
+						int b2 = fg.getBlue() * r / 255;
+						if(bg != null) {
+							//with a background, the shade or pink determines the
+							//proportion of fore and background in the mix
+							//grayer color (G closer to R) gets less background
+							
+							int r3 = bg.getRed() * r / 255;//darken back color
+							int g3 = bg.getGreen() * r / 255; 
+							int b3 = bg.getBlue() * r / 255;
+							r3 = r3 * (r / (r - g));//more red, more BG
+							g3 = g3 * (r / (r - g));
+							b3 = b3 * (r / (r - g));
+							r2 = r3 + (r2 / r * g);//more green, more FG
+							g2 = g3 + (g2 / r * g);
+							b2 = b3 + (b2 / r * g);
+														
+							//dstRGB = (int) ((long)dstRGB+bgRGB*(255-a)/255);
+							dstRGB = (r2 << 16) | (g2 << 8) | b2;
+							dstRGB |= a << 24;
+							
+						} else {
+							//without a background, the shade of pink modifies alpha
+							a = a * g / r; //because of entry clause r > g, g > 0 as a color component - no div0 here
+							
+							dstRGB = (r2 << 16) | (g2 << 8) | b2;
+							dstRGB |= a << 24;
+						}
+					}//end if(r == b && g < r)
 				} else {
+					//plain grayscale is plain hue shifted
 					//most CPUs eat integer math alive, so, let's use that
 					int r2 = fg.getRed() * r / 255;
 					int g2 = fg.getGreen() * r / 255;
 					int b2 = fg.getBlue() * r / 255;
 					
 					dstRGB = (r2 << 16) | (g2 << 8) | b2;
-					//Just a little compositing
-					if(bgRGB != -1)
-						dstRGB = (int) ((long)dstRGB+bgRGB*(255-r)/255);
-					else if(srcRGB == 0)
-						a = 0;
-					
 					dstRGB |= a << 24;
-
 				}
 				//This is slow
 				image.setRGB(x, y, dstRGB);
@@ -216,9 +240,10 @@ public class AsciiEntry {
 		return image;
 	}
 
-	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
+	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map, Color[] colorSpace) {
+		colors = colorSpace;
 		map.put("unknown", new AsciiEntry("unknown", "red", "?"));
-		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", "_", false, true));
+		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", String.valueOf((char)176), false, true));
 		map.put("player_female", new AsciiEntry("player_female", "white", "@"));
 		map.put("player_male", new AsciiEntry("player_male", "white", "@"));
 		map.put("corpse", new AsciiEntry("corpse", "dkgray", "o"));
@@ -228,13 +253,13 @@ public class AsciiEntry {
 		map.put("footstep", new AsciiEntry("footstep", "yellow", "="));
 		map.put("explosion", new AsciiEntry("explosion", "red_yellow", "o"));
 		map.put("lighting_hidden", new AsciiEntry("lighting_hidden", "dkgray_black", "#"));
-		map.put("lighting_lowlight_light", new AsciiEntry("lighting_lowlight_light", "black", " "));
-		map.put("lighting_lowlight_dark", new AsciiEntry("lighting_lowlight_dark", "black", " "));
+		map.put("lighting_lowlight_light", new AsciiEntry("lighting_lowlight_light", "black_ltgray", " "));
+		map.put("lighting_lowlight_dark", new AsciiEntry("lighting_lowlight_dark", "black_dkgray", " "));
 		map.put("lighting_boomered_light", new AsciiEntry("lighting_boomered_light", "magenta_pink", "#"));
 		map.put("lighting_boomered_dark", new AsciiEntry("lighting_boomered_dark", "magenta_pink", "#"));
 
-		map.put("line_target", new AsciiEntry("line_target", "yellow", "-"));
-		map.put("line_trail", new AsciiEntry("line_trail", "yellow", "-"));
+		map.put("line_target", new AsciiEntry("line_target", "yellow", "X", false, true));
+		map.put("line_trail", new AsciiEntry("line_trail", "yellow", String.valueOf((char)177), false, true));
 
 		map.put("weather_acid_drop", new AsciiEntry("weather_acid_drop", "green", "'"));
 		map.put("weather_rain_drop", new AsciiEntry("weather_rain_drop", "blue", "'"));
@@ -243,6 +268,47 @@ public class AsciiEntry {
 		getLegacyAsciiTiles(map);
 
 		getAsciiTiles(jsonFolder, map);
+		
+		//adding some of the missing defaults
+		map.put("npc_female", new AsciiEntry("npc_female", "yellow", "@"));
+		map.put("npc_male", new AsciiEntry("npc_male", "yellow", "@"));
+		map.put("animation_bullet_normal", new AsciiEntry("animation_bullet_normal", "yellow", String.valueOf((char)249), false, true));
+		map.put("animation_bullet_flame", new AsciiEntry("animation_bullet_flame", "red", "*", false, true));
+		map.put("animation_bullet_shrapnel", new AsciiEntry("animation_bullet_shrapnel", "yellow", String.valueOf((char)15), false, true));
+		
+		//adding tiles for hardcoded field elements
+		map.put("fd_null", new AsciiEntry("fd_null", "black", " "));
+		map.put("fd_blood", new AsciiEntry("fd_blood", "red", String.valueOf((char)247)));
+		map.put("fd_bile", new AsciiEntry("fd_bile", "yellow", String.valueOf((char)247)));
+		map.put("fd_gibs_flesh", new AsciiEntry("fd_gibs_flesh", "red", String.valueOf((char)253)));
+		map.put("fd_gibs_veggy", new AsciiEntry("fd_gibs_veggy", "ltgreen", String.valueOf((char)253)));
+		map.put("fd_web", new AsciiEntry("fd_web", "yellow", String.valueOf((char)15)));
+		map.put("fd_slime", new AsciiEntry("fd_slime", "green", String.valueOf((char)126)));
+		map.put("fd_acid", new AsciiEntry("fd_acid", "ltgreen_green", String.valueOf((char)247)));
+		map.put("fd_sap", new AsciiEntry("fd_sap", "black_yellow", String.valueOf((char)247)));
+		map.put("fd_sludge", new AsciiEntry("fd_sludge", "magenta", String.valueOf((char)247)));
+		map.put("fd_fire", new AsciiEntry("fd_fire", "yellow_red", String.valueOf((char)127)));
+		map.put("fd_rubble", new AsciiEntry("fd_rubble", "ltgray_dkgray", "#"));
+		map.put("fd_smoke", new AsciiEntry("fd_smoke", "ltgray_black", String.valueOf((char)177)));
+		map.put("fd_toxic_gas", new AsciiEntry("fd_toxic_gas", "ltgreen", String.valueOf((char)177)));
+		map.put("fd_tear_gas", new AsciiEntry("fd_tear_gas", "ltcyan", String.valueOf((char)177)));
+		map.put("fd_nuke_gas", new AsciiEntry("fd_nuke_gas", "yellow_ltgreen", String.valueOf((char)177)));
+		map.put("fd_gas_vent", new AsciiEntry("fd_gas_vent", "green", String.valueOf((char)9)));
+		map.put("fd_fire_vent", new AsciiEntry("fd_fire_vent", "red", String.valueOf((char)9)));
+		map.put("fd_flame_burst", new AsciiEntry("fd_flame_burst", "red_yellow", "&"));
+		map.put("fd_electricity", new AsciiEntry("fd_electricity", "yellow_ltcyan", String.valueOf((char)157)));
+		map.put("fd_fatigue", new AsciiEntry("fd_fatigue", "yellow", "!"));
+		map.put("fd_push_items", new AsciiEntry("fd_push_items", "white", " "));
+		map.put("fd_shock_vent", new AsciiEntry("fd_shock_vent", "ltcyan", String.valueOf((char)9)));
+		map.put("fd_acid_vent", new AsciiEntry("fd_acid_vent", "ltgreen", String.valueOf((char)9)));
+		map.put("fd_plasma", new AsciiEntry("fd_plasma", "pink", "&"));
+		map.put("fd_laser", new AsciiEntry("fd_laser", "red", String.valueOf((char)157)));
+		map.put("fd_blood_veggy", new AsciiEntry("fd_blood_veggy", "green", String.valueOf((char)247)));
+		map.put("fd_blood_insect", new AsciiEntry("fd_blood_insect", "white", String.valueOf((char)247)));
+		map.put("fd_blood_invertebrate", new AsciiEntry("fd_blood_invertebrate", "ltred", String.valueOf((char)247)));
+		map.put("fd_gibs_insect", new AsciiEntry("fd_gibs_insect", "ltgray", String.valueOf((char)253)));
+		map.put("fd_gibs_invertebrate", new AsciiEntry("fd_gibs_invertebrate", "ltred", String.valueOf((char)253)));
+		
 	}
 
 	private static void getAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
@@ -407,7 +473,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -441,7 +507,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -478,7 +544,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
@@ -501,7 +567,7 @@ public class AsciiEntry {
 				fg = colors[i];
 			}
 			if(colorStrings[i].equalsIgnoreCase(bgStr)) {
-				bg = colors[i];
+				bg = colors[i].darker();
 			}
 		}
 
