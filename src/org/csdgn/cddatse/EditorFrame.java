@@ -128,6 +128,8 @@ public class EditorFrame extends JFrame {
 	private JFileChooser tilesetChooser = null;
 
 	private JTextField txtSearch;
+	
+	private int[] listSelectedIndices = new int[0];
 
 	/**
 	 * Create the frame.
@@ -173,6 +175,7 @@ public class EditorFrame extends JFrame {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				onListSelected(list.getSelectedIndex());
+				listSelectedIndices = list.getSelectedIndices();
 			}
 		});
 
@@ -553,8 +556,19 @@ public class EditorFrame extends JFrame {
 	private void doGenerateAsciiTiles(boolean withBG) {
 		HashMap<String, AsciiEntry> entries = getAsciiEntries();
 
+		//this assumes the user wants to fill all tile-less entries
+		//this is not necessarily the case
 		ArrayList<InternalTile> list = listModel.getList();
-
+		
+		//toss a check in here
+		String[] options = { "All Tiles", "Only Selected Tiles" };
+		boolean selectOnly = JOptionPane.showOptionDialog(this, "Generate ASCII for which tiles?", "Select Option", 0, 
+			JOptionPane.QUESTION_MESSAGE, null, options, options[0]) == 1;
+		if (selectOnly && listSelectedIndices.length == 0) {
+			AppToolkit.showError(this, "Nothing selected. Aborting.");
+			return;
+		}
+		
 		GFX gfx = GFX.instance;
 
 		BufferedImage tileset = null;
@@ -590,7 +604,7 @@ public class EditorFrame extends JFrame {
 
 		if(withBG) {
 			Graphics2D gx = bg.createGraphics();
-			gx.setColor(Color.BLACK);
+			gx.setColor(Options.colorSpace[0]);
 			gx.fillRect(0, 0, info.width, info.height);
 			gx.dispose();
 
@@ -598,7 +612,7 @@ public class EditorFrame extends JFrame {
 		}
 
 		for(InternalTile tile : list) {
-			if(tile.isImageless()) {
+			if(tile.isImageless() && ((!selectOnly) || (selectOnly &&  contains(listSelectedIndices, list.indexOf(tile))))) { //run-on if clause?
 				AsciiEntry e = entries.get(tile.id);
 				if(e != null) {
 					BufferedImage img = e.createAsciiTile(info.width, info.height, tileset);
@@ -1007,7 +1021,7 @@ public class EditorFrame extends JFrame {
 
 		HashMap<String, AsciiEntry> entries = new HashMap<String, AsciiEntry>();
 
-		AsciiEntry.getAllAsciiTiles(jsonFolder, entries);
+		AsciiEntry.getAllAsciiTiles(jsonFolder, entries, Options.colorSpace);
 		return entries;
 	}
 
@@ -1101,4 +1115,14 @@ public class EditorFrame extends JFrame {
 
 		return false;
 	}
+	
+	//this refuses to work as private static <T> boolean contains( T[] array, T value ) :/
+	private static boolean contains( int[] array, int value ) {
+    for ( int i : array )
+        if ( i == value )
+            return true;
+
+    return false;
+}
+	
 }

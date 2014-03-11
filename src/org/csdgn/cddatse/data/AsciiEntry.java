@@ -20,11 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class AsciiEntry {
-	private static final Color[] colors = new Color[] { new Color(0, 0, 0), new Color(255, 0, 0), new Color(0, 110, 0),
-			new Color(92, 51, 23), new Color(0, 0, 200), new Color(139, 58, 98), new Color(0, 150, 180), new Color(150, 150, 150),
-			new Color(150, 150, 150), new Color(99, 99, 99), new Color(99, 99, 99), new Color(255, 150, 150), new Color(255, 150, 150),
-			new Color(0, 255, 0), new Color(0, 255, 0), new Color(190, 190, 0), new Color(100, 100, 255), new Color(100, 100, 255),
-			new Color(255, 0, 255), new Color(0, 240, 255), new Color(0, 240, 255), new Color(255, 255, 255) };
+	private static Color[] colors = new Color[22];
 	private static final String[] colorStrings = new String[] { "BLACK", "RED", "GREEN", "BROWN", "BLUE", "MAGENTA", "CYAN", "LTGRAY",
 			"LIGHT_GRAY", "DKGRAY", "DARK_GRAY", "LTRED", "LIGHT_RED", "LTGREEN", "LIGHT_GREEN", "YELLOW", "LTBLUE", "LIGHT_BLUE", "PINK",
 			"LTCYAN", "LIGHT_CYAN", "WHITE" };
@@ -162,9 +158,12 @@ public class AsciiEntry {
 							//proportion of fore and background in the mix
 							//grayer color (G closer to R) gets less background
 							
-							int r3 = bg.getRed() * (r / (r - g));	//the mix proportion is the difference between R and G.
-							int g3 = bg.getGreen() * (r / (r - g)); //more red, more BG
-							int b3 = bg.getBlue() * (r / (r - g));  //
+							int r3 = bg.getRed() * r / 255;//darken back color
+							int g3 = bg.getGreen() * r / 255; 
+							int b3 = bg.getBlue() * r / 255;
+							r3 = r3 * (r / (r - g));//more red, more BG
+							g3 = g3 * (r / (r - g));
+							b3 = b3 * (r / (r - g));
 							r2 = r3 + (r2 / r * g);//more green, more FG
 							g2 = g3 + (g2 / r * g);
 							b2 = b3 + (b2 / r * g);
@@ -241,7 +240,8 @@ public class AsciiEntry {
 		return image;
 	}
 
-	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map) {
+	public static void getAllAsciiTiles(File jsonFolder, HashMap<String, AsciiEntry> map, Color[] colorSpace) {
+		colors = colorSpace;
 		map.put("unknown", new AsciiEntry("unknown", "red", "?"));
 		map.put("highlight_item", new AsciiEntry("highlight_item", "blue", String.valueOf((char)176), false, true));
 		map.put("player_female", new AsciiEntry("player_female", "white", "@"));
