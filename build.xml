@@ -1,106 +1,114 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <project name="CDDATSELite" default="dispatch" basedir="." >
 	<!-- This is kind of like a Makefile, but for Java programs. -->
-	
+
 	<!-- Chase's Ye Olde Ant Build Script. If anyone wants to convert this
 	     project to Maven and explain to me in detail how Maven works,
 	     I would be all for it. Until then, Ye Olde Ant Build Script. -->
-	
+
 	<!-- Your settings, all you need to change is here -->
 	<description>Ant Build Script</description>
 	<property name="build.version" value="7" />
-	
+
 	<property file="version.number" />
 	<property name="version.file" value="src/org/csdgn/cddatse/Version.java" />
-	
+
 	<property name="app.name" value="cddatse" />
 	<property name="app.build" value="${version.major}.${version.minor}${version.status}" />
-	
-	<property name="launch.exe" value="cddatse.exe" />
+
+	<property name="launch.bat" value="cddatse.bat" />
 	<property name="launch.sh" value="cddatse.sh" />
- 
-	<property name="releasedir" value="dispatch" />
-	<property name="resourcedir" value="resource" />
-	<property name="launcherdir" value="launcher" />
-	<property name="libdir" value="lib" />
-	<property name="srcdir" value="src" />
-	<property name="bindir" value="bin" />
-	
+
+	<property name="release.dir" value="dispatch" />
+	<property name="resource.dir" value="resource" />
+	<property name="lib.dir" value="lib" />
+	<property name="src.dir" value="src" />
+	<property name="bin.dir" value="bin" />
+
 	<property name="jar.mainclass" value="org.csdgn.cddatse.Main" />
-	
+
 	<path id="project.class.path">
-		<pathelement location="${libdir}/gson-2.2.4.jar" />
+		<pathelement location="${lib.dir}/gson-2.2.4.jar" />
 	</path>
-	
+
 	<!-- Nothing to see past here folks, move along. -->
- 
+
 	<!-- Compile the source java to class files -->
 	<target name="compile">
 		<!-- Update our VERSION java file -->
 		<replaceregexp file="${version.file}" match="int MAJOR = [0-9]*;" replace="int MAJOR = ${version.major};" />
 		<replaceregexp file="${version.file}" match="int MINOR = [0-9]*;" replace="int MINOR = ${version.minor};" />
 		<replaceregexp file="${version.file}" match='String STATUS = ".*?";' replace='String STATUS = "${version.status}";' />
-		
+
 		<!-- Delete all the current files so we can recompile with our compiler. -->
-		<mkdir dir="${bindir}"/>
+		<mkdir dir="${bin.dir}"/>
 		<delete>
-			<fileset dir="${bindir}" includes="**/*.class"/>
+			<fileset dir="${bin.dir}" includes="**/*.class"/>
 		</delete>
-		
+
 		<!-- Compile with no debugging info -->
-		<javac srcdir="${srcdir}" destdir="${bindir}" includeAntRuntime="no" encoding="UTF-8"
+		<javac srcdir="${src.dir}" destdir="${bin.dir}" includeAntRuntime="no" encoding="UTF-8"
 		 	target="${build.version}" source="${build.version}" debug="off">
 			<exclude name="demo/*.java"/>
 			<exclude name="test/*.java"/>
 			<classpath refid="project.class.path" />
 		</javac>
 	</target>
-	
+
 	<!-- This just builds our manifest file -->
 	<target name="manifest">
 		<!-- The actual jar name here is unimportant but the path is. -->
-		<manifestclasspath property="jar.classpath" jarfile="${libdir}/placeholder.jar">
+		<manifestclasspath property="jar.classpath" jarfile="${lib.dir}/placeholder.jar">
 			<classpath refid="project.class.path" />
-    	</manifestclasspath>
+    </manifestclasspath>
 		<manifest file="MANIFEST.MF">
 			<attribute name="Class-Path" value="${jar.classpath}" />
 			<attribute name="Main-Class" value="${jar.mainclass}" />
 		</manifest>
 	</target>
-	
+
 	<!-- This builds the dispatch directory and everything that goes in it. -->
 	<target name="dispatch" depends="compile,manifest">
 		<!-- Cleanup any crap that got in there -->
-		<delete dir="${releasedir}" />
-		<mkdir dir="${releasedir}" />
-		
+		<delete dir="${release.dir}" />
+		<mkdir dir="${release.dir}" />
+
 		<!-- Copy our libraries into the dispatch library folder. -->
-		<copydir src="${libdir}" dest="${releasedir}/${libdir}" />
-		
+		<copy todir="${release.dir}/${lib.dir}" >
+		    <fileset dir="${lib.dir}" includes="**"/>
+		</copy>
+
 		<!-- Create our main jar file. Again in the library folder. -->
-		<property name="release.file" location="${releasedir}/${libdir}/${app.name}.jar" />
-		<jar duplicate="add" basedir="${bindir}" destfile="${release.file}" update="true" compress="true" manifest="MANIFEST.MF">
+		<property name="release.file" location="${release.dir}/${lib.dir}/${app.name}.jar" />
+		<jar duplicate="add" basedir="${bin.dir}" destfile="${release.file}" update="true" compress="true" manifest="MANIFEST.MF">
 			<include name="**/*.class" />
 		</jar>
-		
+
 		<!-- This copies the resources from our resource directory into our jar. -->
-		<jar duplicate="add" basedir="${resourcedir}" destfile="${release.file}" update="true" compress="true">
+		<jar duplicate="add" basedir="${resource.dir}" destfile="${release.file}" update="true" compress="true">
 			<include name="*.png" />
 		</jar>
-		
+
 		<!-- Copy the launcher files to our dispatch directory. -->
-		<copy file="${launcherdir}/${launch.exe}" todir="${releasedir}" />
-		<copy file="${launcherdir}/${launch.sh}" todir="${releasedir}" />
-		
+		<copy file="${resource.dir}/${launch.bat}" todir="${release.dir}" />
+		<copy file="${resource.dir}/${launch.sh}" todir="${release.dir}" />
+		<chmod file="${release.dir}/${launch.sh}" perm="ugo+x" />
+
 		<!-- Copy readme/license -->
-		<copy file="LICENSE" todir="${releasedir}" />
-		<copy file="ICONLICENSE" todir="${releasedir}" />
-		<copy file="README.md" todir="${releasedir}" />
-		
+		<copy file="LICENSE" todir="${release.dir}" />
+		<copy file="ICONLICENSE" todir="${release.dir}" />
+		<copy file="README.md" todir="${release.dir}" />
+
 		<!-- Delete the manifest, we already made use of it -->
 		<delete file="MANIFEST.MF" />
-		
-		<zip destfile="${releasedir}/${app.name}_${app.build}.zip" basedir="${releasedir}" level="9" update="true" />
+
+		<zip destfile="${release.dir}/${app.name}_${app.build}.zip" basedir="${release.dir}" level="9" update="true" />
+	</target>
+
+	<!-- Clean -->
+	<target name="clean">
+		<delete dir="${release.dir}" />
+		<delete dir="${bin.dir}" />
 	</target>
 
 </project>

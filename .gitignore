@@ -5,7 +5,6 @@
 test*
 dispatch/
 options
-*.bat
 *.o
 *.res
 *.exe
