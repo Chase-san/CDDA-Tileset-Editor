@@ -25,8 +25,11 @@ package org.csdgn.cddatse;
 import java.awt.BorderLayout;
 
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 
 import org.csdgn.cddatse.data.ImageTile;
 
@@ -44,23 +47,37 @@ public class ImageTilePanel extends JPanel {
 		setLayout(new BorderLayout());
 
 		// get all the name things
-		JTextArea area = new JTextArea();
-		area.setText(sanitize(tile.toString()));
-		area.addCaretListener(e -> {
+		add(createIdPanel(), BorderLayout.NORTH);
+
+	}
+	
+	private JPanel createIdPanel() {
+		JPanel panel = new JPanel(new BorderLayout(4, 4));
+		
+		JLabel label = new JLabel("ID(s)");
+		label.setVerticalAlignment(SwingConstants.TOP);
+		panel.add(label, BorderLayout.WEST);
+		
+		JTextArea text = new JTextArea();
+		text.setText(sanitize(tile.toString()));
+		text.setRows(4);
+		text.addCaretListener(e -> {
 			// check if changed
 			String a = sanitize(tile.toString());
-			String b = sanitize(area.getText());
+			String b = sanitize(text.getText());
 			if (!a.equals(b)) {
 				tile.id.clear();
-				for (String str : area.getText().split("[ \\t\\n\\r]+")) {
+				for (String str : text.getText().split("[ \\t\\n\\r]+")) {
 					tile.id.add(str);
 				}
 				main.updateTile(tile);
 			}
 		});
+		JScrollPane scroll = new JScrollPane(text);
 
-		add(area, BorderLayout.CENTER);
-
+		panel.add(scroll, BorderLayout.CENTER);
+		
+		return panel;
 	}
 
 	private static String sanitize(String list) {
