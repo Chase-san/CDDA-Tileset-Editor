@@ -35,7 +35,7 @@ public class Main {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		
+
 		// show the pane
 		EventQueue.invokeLater(() -> {
 			try {

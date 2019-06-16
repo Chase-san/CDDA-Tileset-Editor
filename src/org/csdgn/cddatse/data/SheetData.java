@@ -57,7 +57,7 @@ public class SheetData {
 		}
 		return hasData;
 	}
-	
+
 	public void write(JsonObject obj) {
 		obj.addProperty("sprite_width", width);
 		obj.addProperty("sprite_height", height);

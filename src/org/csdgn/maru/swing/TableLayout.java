@@ -62,34 +62,28 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 	 * Default arguments. No hgap, no vgap and to fill the cell.
 	 */
 	public TableLayout() {
-		this(0,0,true);
+		this(0, 0, true);
 	}
 
 	/**
-	 * @param fill
-	 *            Fill the entire cell?
+	 * @param fill Fill the entire cell?
 	 */
 	public TableLayout(boolean fill) {
-		this(0,0,fill);
+		this(0, 0, fill);
 	}
 
 	/**
-	 * @param hgap
-	 *            Horizontal Gap between cells
-	 * @param vgap
-	 *            Vertical Gap between cells
+	 * @param hgap Horizontal Gap between cells
+	 * @param vgap Vertical Gap between cells
 	 */
 	public TableLayout(int hgap, int vgap) {
 		this(hgap, vgap, true);
 	}
 
 	/**
-	 * @param hgap
-	 *            Horizontal Gap between cells
-	 * @param vgap
-	 *            Vertical Gap between cells
-	 * @param fill
-	 *            Fill the entire cell?
+	 * @param hgap Horizontal Gap between cells
+	 * @param vgap Vertical Gap between cells
+	 * @param fill Fill the entire cell?
 	 */
 	public TableLayout(int hgap, int vgap, boolean fill) {
 		defined = new HashMap<Component, TableLayoutConstraint>();
@@ -109,18 +103,15 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 			cons = new TableLayoutConstraint();
 		}
 		if (cons == null) {
-			throw new IllegalArgumentException(
-					"Object must be a String or SimpleTableLayoutConstraint.");
+			throw new IllegalArgumentException("Object must be a String or SimpleTableLayoutConstraint.");
 		}
 
 		defined.put(comp, cons.clone());
 	}
 
 	/**
-	 * @param name
-	 *            Text to use to set the constraints.
-	 * @param comp
-	 *            The component to set the contraints on.
+	 * @param name Text to use to set the constraints.
+	 * @param comp The component to set the contraints on.
 	 * @see TableLayoutConstraint#create(String)
 	 */
 	@Override
@@ -144,16 +135,16 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 	@Override
 	public void invalidateLayout(Container target) {
 		// we do not currently cache anything
-		
+
 	}
 
 	@Override
 	public void layoutContainer(Container parent) {
 		Insets insets = parent.getInsets();
 
-		//int heightMinusInsets = parent.getHeight() - (insets.left + insets.right);
-		//int widthMinusInsets = parent.getWidth() - (insets.left + insets.right);
-		
+		// int heightMinusInsets = parent.getHeight() - (insets.left + insets.right);
+		// int widthMinusInsets = parent.getWidth() - (insets.left + insets.right);
+
 		Table table = layoutTable(parent);
 
 		/*
@@ -198,8 +189,7 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 				cell.comp.setBounds(x, y, width, height);
 			} else {
 				/*
-				 * Align the element inside the cell according to its alignment
-				 * x/y and size
+				 * Align the element inside the cell according to its alignment x/y and size
 				 */
 				Dimension dim = cell.comp.getPreferredSize();
 
@@ -251,8 +241,8 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 			}
 
 			/*
-			 * This is used to determine the number of columns and rows we will
-			 * have in the end.
+			 * This is used to determine the number of columns and rows we will have in the
+			 * end.
 			 */
 			if (cell.x + cell.colspan - 1 > maxX) {
 				maxX = cell.x + cell.colspan - 1;
@@ -281,21 +271,21 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 		/*
 		 * Use the even distributed span cell to get this in one go.
 		 * 
-		 * If the total size of the two combined rows/columns can already
-		 * accommodate it, do not increase the size of any of them!
+		 * If the total size of the two combined rows/columns can already accommodate
+		 * it, do not increase the size of any of them!
 		 * 
-		 * XXX: This bit of code is a can of worms really. There is no perfect
-		 * way to do it really, so I tried to imitate HTML tables as close as I
-		 * care to. Unfortunately those documents say it can be done any number
-		 * of ways, so WTH right?
+		 * XXX: This bit of code is a can of worms really. There is no perfect way to do
+		 * it really, so I tried to imitate HTML tables as close as I care to.
+		 * Unfortunately those documents say it can be done any number of ways, so WTH
+		 * right?
 		 */
 		for (Cell cell : cells) {
 			Dimension prefSize = cell.comp.getPreferredSize();
 			Dimension dim = new Dimension(prefSize);
-			if(cell.width >= 0) {
+			if (cell.width >= 0) {
 				dim.width = cell.width;
 			}
-			if(cell.height >= 0) {
+			if (cell.height >= 0) {
 				dim.height = cell.height;
 			}
 			if (cell.colspan != 1) {
@@ -363,10 +353,8 @@ public class TableLayout implements LayoutManager, LayoutManager2 {
 
 		Table table = layoutTable(parent);
 
-		int width = hgap * (table.cols.length - 1) + insets.left
-				+ insets.right;
-		int height = vgap * (table.rows.length - 1) + insets.top
-				+ insets.bottom;
+		int width = hgap * (table.cols.length - 1) + insets.left + insets.right;
+		int height = vgap * (table.rows.length - 1) + insets.top + insets.bottom;
 
 		/*
 		 * Add up the size of the columns and rows

@@ -31,18 +31,18 @@ import com.google.gson.JsonObject;
 public class Sprite {
 	public Set<Integer> sprite;
 	public Integer weight;
-	
+
 	public Sprite() {
 		sprite = new LinkedHashSet<Integer>();
 		weight = null;
 	}
-	
+
 	public Sprite(JsonElement ele) {
 		sprite = new LinkedHashSet<Integer>();
 		weight = null;
 		setJson(ele);
 	}
-	
+
 	public void setJson(JsonElement ele) {
 		if (ele.isJsonObject()) {
 			JsonObject obj = ele.getAsJsonObject();
@@ -52,9 +52,9 @@ public class Sprite {
 			sprite.add(ele.getAsInt());
 		}
 	}
-	
+
 	public JsonElement getJson() {
-		if(weight == null) {
+		if (weight == null) {
 			return JsonToolkit.ints(sprite);
 		}
 		JsonObject obj = new JsonObject();

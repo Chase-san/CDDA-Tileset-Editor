@@ -33,16 +33,16 @@ import java.util.ArrayList;
  */
 public class TableLayoutConstraint implements Cloneable {
 	/**
-	 * Easy method to create contraints from a string!
+	 * Easy method to create constraints from a string!
 	 * 
-	 * @param data
-	 *            Input text that will tell use how to construct the contraints. <br>
-	 * <br>
-	 *            Examples of valid strings<br>
-	 *            x=0; y=0<br>
-	 *            x = 0 ; colspan = 2<br>
-	 *            y=last ;x=last+ 1 ;<br>
-	 *            colspan=4; x=21; y=last-8; rowspan=2
+	 * @param data Input text that will tell use how to construct the constraints.
+	 *             <br>
+	 *             <br>
+	 *             Examples of valid strings<br>
+	 *             x=0; y=0<br>
+	 *             x = 0 ; colspan = 2<br>
+	 *             y=last ;x=last+ 1 ;<br>
+	 *             colspan=4; x=21; y=last-8; rowspan=2
 	 * @return Some useful and easy to get constraints!
 	 */
 	public static final TableLayoutConstraint create(String data) {
@@ -60,26 +60,22 @@ public class TableLayoutConstraint implements Cloneable {
 			if (kv[0].equals("colspan")) {
 				stlc.colspan = Integer.parseInt(kv[1].trim());
 				if (stlc.colspan < 1) {
-					throw new IllegalArgumentException(
-							"colspan must be at least 1.");
+					throw new IllegalArgumentException("colspan must be at least 1.");
 				}
 			} else if (kv[0].equals("rowspan")) {
 				stlc.rowspan = Integer.parseInt(kv[1].trim());
 				if (stlc.rowspan < 1) {
-					throw new IllegalArgumentException(
-							"rowspan must be at least 1.");
+					throw new IllegalArgumentException("rowspan must be at least 1.");
 				}
 			} else if (kv[0].equals("w") || kv[0].equals("width")) {
 				stlc.width = Integer.parseInt(kv[1].trim());
 				if (stlc.width < 0) {
-					throw new IllegalArgumentException(
-							"width must be >= 0.");
+					throw new IllegalArgumentException("width must be >= 0.");
 				}
 			} else if (kv[0].equals("h") || kv[0].equals("height")) {
 				stlc.height = Integer.parseInt(kv[1].trim());
 				if (stlc.height < 0) {
-					throw new IllegalArgumentException(
-							"width must be >= 0.");
+					throw new IllegalArgumentException("width must be >= 0.");
 				}
 			} else if (kv[0].equals("x")) {
 				if (kv[1].equals("last")) {
@@ -91,8 +87,7 @@ public class TableLayoutConstraint implements Cloneable {
 				} else {
 					stlc.x = Integer.parseInt(kv[1].trim());
 					if (stlc.x < 0) {
-						throw new IllegalArgumentException(
-								"x must be at least 0.");
+						throw new IllegalArgumentException("x must be at least 0.");
 					}
 				}
 			} else if (kv[0].equals("y")) {
@@ -105,8 +100,7 @@ public class TableLayoutConstraint implements Cloneable {
 				} else {
 					stlc.y = Integer.parseInt(kv[1].trim());
 					if (stlc.y < 0) {
-						throw new IllegalArgumentException(
-								"y must be at least 0.");
+						throw new IllegalArgumentException("y must be at least 0.");
 					}
 				}
 			}
@@ -116,15 +110,15 @@ public class TableLayoutConstraint implements Cloneable {
 	}
 
 	/**
-	 * I have no plans to jam a math expression (SYA+RPN) evaluator into this
-	 * layout manager, all they get is last + x or last - x, where x is any
-	 * integer constant. <br>
+	 * I have no plans to jam a math expression (SYA+RPN) evaluator into this layout
+	 * manager, all they get is last + x or last - x, where x is any integer
+	 * constant. <br>
 	 * <br>
-	 * If I am really nice, I might expand that to x + last or x - last, but
-	 * don't hold your breath. <br>
+	 * If I am really nice, I might expand that to x + last or x - last, but don't
+	 * hold your breath. <br>
 	 * <br>
-	 * XXX: Perhaps use scripting support to do it, but that might have cross platform
-	 * limitations.
+	 * XXX: Perhaps use scripting support to do it, but that might have cross
+	 * platform limitations.
 	 */
 	private static final int eval(String n) {
 		boolean add = true;
@@ -149,8 +143,8 @@ public class TableLayoutConstraint implements Cloneable {
 	}
 
 	/**
-	 * Smart Fast Split. Removes null sections (length 0). "ab..cd" would
-	 * produce [ab][cd] with '.'
+	 * Smart Fast Split. Removes null sections (length 0). "ab..cd" would produce
+	 * [ab][cd] with '.'
 	 */
 	private static final String[] sfSplit(String src, char delim) {
 		ArrayList<String> output = new ArrayList<String>();
@@ -172,16 +166,16 @@ public class TableLayoutConstraint implements Cloneable {
 	}
 
 	/**
-	 * How many columns does this span. A column is usually the cells that span
-	 * from left to right. Thus spanning more of them usually makes it take up
-	 * more horizontal space.
+	 * How many columns does this span. A column is usually the cells that span from
+	 * left to right. Thus spanning more of them usually makes it take up more
+	 * horizontal space.
 	 */
 	public int colspan = 1;
 
 	/**
-	 * How many rows does this span. A row is usually the cells that span from
-	 * top to bottom. Thus spanning more of them usually makes it take up more
-	 * vertical space.
+	 * How many rows does this span. A row is usually the cells that span from top
+	 * to bottom. Thus spanning more of them usually makes it take up more vertical
+	 * space.
 	 */
 	public int rowspan = 1;
 
@@ -206,14 +200,16 @@ public class TableLayoutConstraint implements Cloneable {
 	 * Sets the offset y position from the last entered item.
 	 */
 	public int offsetY = 1;
-	
+
 	/**
-	 * Sets the minimum width for the component. If >= 0 this is used instead of the component size.
+	 * Sets the minimum width for the component. If >= 0 this is used instead of the
+	 * component size.
 	 */
 	public int width = -1;
-	
+
 	/**
-	 * Sets the minimum height for the component. If >= 0 this is used instead of the component size.
+	 * Sets the minimum height for the component. If >= 0 this is used instead of
+	 * the component size.
 	 */
 	public int height = -1;
 
@@ -227,8 +223,7 @@ public class TableLayoutConstraint implements Cloneable {
 	 * Initializes this TableLayoutConstraint with the values from the given
 	 * TableLayoutConstraint
 	 * 
-	 * @param stlc
-	 *            Initial values to use in this TableLayoutConstraint
+	 * @param stlc Initial values to use in this TableLayoutConstraint
 	 */
 	public TableLayoutConstraint(TableLayoutConstraint stlc) {
 		if (stlc == null) {
@@ -245,8 +240,7 @@ public class TableLayoutConstraint implements Cloneable {
 	}
 
 	/**
-	 * Provided for convince. A new instance is NOT required for every cell
-	 * added.
+	 * Provided for convince. A new instance is NOT required for every cell added.
 	 */
 	@Override
 	public TableLayoutConstraint clone() {

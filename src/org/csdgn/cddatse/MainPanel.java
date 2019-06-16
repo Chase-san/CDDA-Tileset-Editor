@@ -82,7 +82,7 @@ public class MainPanel extends JPanel {
 		JTextField filter = new JTextField();
 		filter.addCaretListener(e -> {
 			String temp = filter.getText();
-			if(!temp.trim().equals(this.filter)) {
+			if (!temp.trim().equals(this.filter)) {
 				this.filter = temp;
 				updateList();
 			}

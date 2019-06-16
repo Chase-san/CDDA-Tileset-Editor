@@ -52,7 +52,7 @@ public class MainFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 640, 480);
 		setLocationByPlatform(true);
-		
+
 		disabledControls = new ArrayList<JComponent>();
 
 		tileset = null;
@@ -70,9 +70,9 @@ public class MainFrame extends JFrame {
 			setTitle(Version.getVersionString() + " - " + tileset.view);
 		}
 	}
-	
+
 	private void enableControls(boolean enable) {
-		for(JComponent comp : disabledControls) {
+		for (JComponent comp : disabledControls) {
 			comp.setEnabled(enable);
 		}
 	}
@@ -167,21 +167,21 @@ public class MainFrame extends JFrame {
 		menu.add(createOpenMenu());
 
 		menu.addSeparator();
-		
+
 		item = new JMenuItem("Save");
 		item.setMnemonic(KeyEvent.VK_S);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
 		item.setEnabled(false);
-		//disabledControls.add(item);
+		// disabledControls.add(item);
 		menu.add(item);
-		
+
 		item = new JMenuItem("Save As");
 		item.setMnemonic(KeyEvent.VK_A);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
 		item.setEnabled(false);
-		//disabledControls.add(item);
+		// disabledControls.add(item);
 		menu.add(item);
-		
+
 		menu.addSeparator();
 
 		item = new JMenuItem("Close");

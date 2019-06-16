@@ -60,16 +60,16 @@ public class Tileset extends TilesetStub {
 		tiles = new ArrayList<ImageTile>();
 		fallback = new ArrayList<FallbackTile>();
 	}
-	
+
 	public void load(TilesetStub stub) {
 		name = stub.name;
 		view = stub.view;
 		json = stub.json;
 		file = stub.file;
-		
+
 		loadJson(json);
 	}
-	
+
 	public Set<String> getSheetNames() {
 		return byFile.keySet();
 	}
@@ -95,66 +95,64 @@ public class Tileset extends TilesetStub {
 		}
 		return tiles;
 	}
-	
+
 	public boolean saveJson(File file) {
 		try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			JsonObject root = new JsonObject();
-			
+
 			JsonArray infoArray = new JsonArray();
 			JsonObject info = new JsonObject();
 			info.addProperty("height", tileHeight);
 			info.addProperty("width", tileWidth);
 			infoArray.add(info);
-			
+
 			root.add("tile_info", infoArray);
-			
-			
-			//tiles-new
+
+			// tiles-new
 			JsonArray sheets = new JsonArray();
-			for(String sheetFile : byFile.keySet()) {
+			for (String sheetFile : byFile.keySet()) {
 				JsonObject sheet = new JsonObject();
 				sheet.addProperty("file", sheetFile);
-				
-				//Sprite/Sheet data
+
+				// Sprite/Sheet data
 				SheetData data = fileSheets.get(sheetFile);
-				if(data != null) {
+				if (data != null) {
 					data.write(sheet);
 				}
-				
-				//actual tiles
+
+				// actual tiles
 				JsonArray tiles = new JsonArray();
 				JsonArray fallbacks = new JsonArray();
-				for(Tile tile : byFile.get(sheetFile)) {
-					if(tile instanceof ImageTile) {
-						ImageTile it = (ImageTile)tile;
+				for (Tile tile : byFile.get(sheetFile)) {
+					if (tile instanceof ImageTile) {
+						ImageTile it = (ImageTile) tile;
 						JsonObject obj = new JsonObject();
 						it.write(obj);
 						tiles.add(obj);
 					} else {
-						FallbackTile ft = (FallbackTile)tile;
+						FallbackTile ft = (FallbackTile) tile;
 						JsonObject obj = new JsonObject();
 						ft.write(obj);
 						fallbacks.add(obj);
 					}
 				}
-				
+
 				sheet.add("tiles", tiles);
-				if(fallbacks.size() > 0) {
+				if (fallbacks.size() > 0) {
 					sheet.add("ascii", fallbacks);
 				}
-				
+
 				sheets.add(sheet);
 			}
-			
+
 			root.add("tiles-new", sheets);
-			
-			
+
 			GsonBuilder gb = new GsonBuilder();
 			gb.setPrettyPrinting();
 			Gson gson = gb.create();
 			w.write(gson.toJson(root));
 			w.flush();
-			
+
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -184,11 +182,11 @@ public class Tileset extends TilesetStub {
 				String fileName = info.get("file").getAsString();
 				parseSpriteData(fileName, info);
 				parseTiles(fileName, info.get("tiles").getAsJsonArray());
-				if(info.has("ascii")) {
+				if (info.has("ascii")) {
 					parseFallback(fileName, info.get("ascii").getAsJsonArray());
 				}
 			});
-			
+
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();

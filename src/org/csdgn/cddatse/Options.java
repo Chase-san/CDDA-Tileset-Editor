@@ -125,16 +125,16 @@ public class Options {
 		}
 
 		File file = folderChooser.getSelectedFile();
-		if(file == null) {
+		if (file == null) {
 			return null;
 		}
 		if (!file.isDirectory()) {
 			file = file.getParentFile();
 		}
-		if(!file.exists()) {
+		if (!file.exists()) {
 			return null;
 		}
-		
+
 		lastPath = file.getAbsoluteFile();
 		return file;
 	}

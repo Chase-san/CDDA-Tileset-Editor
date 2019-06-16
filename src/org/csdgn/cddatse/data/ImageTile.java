@@ -83,10 +83,10 @@ public class ImageTile implements Tile {
 		if (obj.has("rotates")) {
 			rotates = obj.get("rotates").getAsBoolean();
 		}
-		
-		if(obj.has("additional_tiles")) {
+
+		if (obj.has("additional_tiles")) {
 			JsonArray array = obj.get("additional_tiles").getAsJsonArray();
-			array.forEach((ele)-> {
+			array.forEach((ele) -> {
 				ImageTile tile = new ImageTile();
 				tile.read(ele.getAsJsonObject());
 				extra.add(tile);
@@ -103,11 +103,11 @@ public class ImageTile implements Tile {
 			obj.add("bg", getSprites(bg));
 		}
 		obj.addProperty("rotates", rotates);
-		
+
 		if (extra.size() > 0) {
 			obj.addProperty("multitile", true);
 			JsonArray array = new JsonArray();
-			for(ImageTile tile : extra) {
+			for (ImageTile tile : extra) {
 				JsonObject tObj = new JsonObject();
 				tile.write(tObj);
 				array.add(tObj);
@@ -115,16 +115,16 @@ public class ImageTile implements Tile {
 			obj.add("additional_tiles", array);
 		}
 	}
-	
+
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
 		boolean first = true;
-		for(String nid : id) {
-			if(!first) {
+		for (String nid : id) {
+			if (!first) {
 				buf.append("\n    ");
 			}
 			first = false;
-			
+
 			buf.append(nid);
 		}
 		return buf.toString();

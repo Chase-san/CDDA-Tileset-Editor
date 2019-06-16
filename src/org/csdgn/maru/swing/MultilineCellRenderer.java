@@ -52,7 +52,7 @@ public class MultilineCellRenderer<E> implements ListCellRenderer<E> {
 		if (width > 0) {
 			textArea.setSize(width, Short.MAX_VALUE);
 		}
-		if(focus) {
+		if (focus) {
 			textArea.setForeground(list.getSelectionForeground());
 			textArea.setBackground(list.getSelectionBackground());
 		} else {

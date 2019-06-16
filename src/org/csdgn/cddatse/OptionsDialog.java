@@ -50,7 +50,7 @@ public class OptionsDialog extends JDialog {
 
 		this.options = options;
 		setContentPane(createPanel());
-		
+
 		pack();
 
 	}
@@ -70,7 +70,7 @@ public class OptionsDialog extends JDialog {
 		JButton browse = new JButton("Browse");
 		browse.addActionListener(e -> {
 			File dir = options.browseForDirectory(this, "Select CDDA Directory");
-			if(dir != null) {
+			if (dir != null) {
 				text.setText(dir.getAbsolutePath());
 				options.gamePath = dir;
 			}
@@ -79,8 +79,8 @@ public class OptionsDialog extends JDialog {
 		panel.add(label, "x=0;y=0");
 		panel.add(text, "x=1;y=0;w=300");
 		panel.add(browse, "x=2;y=0");
-		
-		//OK Button
+
+		// OK Button
 		JButton ok = new JButton("OK");
 		ok.addActionListener(e -> {
 			dispose();
