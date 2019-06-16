@@ -49,8 +49,8 @@ public class Tileset extends TilesetStub {
 	public Map<String, List<Tile>> byId;
 	public List<FallbackTile> fallback;
 	public Map<String, SheetData> fileSheets;
-	public List<ImageTile> tiles;
 	public int tileHeight;
+	public List<ImageTile> tiles;
 	public int tileWidth;
 
 	public Tileset() {
@@ -62,6 +62,32 @@ public class Tileset extends TilesetStub {
 		fallback = new ArrayList<FallbackTile>();
 	}
 
+	public void addFallback(String file, FallbackTile tile) {
+		getListFor(byFile, file).add(tile);
+		fallback.add(tile);
+	}
+	
+	public void addTile(String file, ImageTile tile) {
+		getListFor(byFile, file).add(tile);
+		for (String id : tile.id) {
+			getListFor(byId, id).add(tile);
+		}
+		tiles.add(tile);
+	}
+
+	private List<Tile> getListFor(Map<String, List<Tile>> ref, String id) {
+		List<Tile> tiles = ref.get(id);
+		if (tiles == null) {
+			tiles = new ArrayList<Tile>();
+			ref.put(id, tiles);
+		}
+		return tiles;
+	}
+
+	public Set<String> getSheetNames() {
+		return byFile.keySet();
+	}
+
 	public void load(TilesetStub stub) {
 		name = stub.name;
 		view = stub.view;
@@ -70,7 +96,65 @@ public class Tileset extends TilesetStub {
 
 		loadJson(json);
 	}
-	
+
+	public boolean loadJson(File file) {
+		try (Reader r = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+			JsonParser parser = new JsonParser();
+			JsonObject root = parser.parse(r).getAsJsonObject();
+
+			JsonArray tileInfo = root.get("tile_info").getAsJsonArray();
+			tileInfo.forEach((a) -> {
+				JsonObject info = a.getAsJsonObject();
+				if (info.has("height")) {
+					tileHeight = info.get("height").getAsInt();
+				}
+				if (info.has("width")) {
+					tileWidth = info.get("width").getAsInt();
+				}
+			});
+
+			JsonArray tilesNew = root.get("tiles-new").getAsJsonArray();
+			tilesNew.forEach((a) -> {
+				JsonObject info = a.getAsJsonObject();
+				String fileName = info.get("file").getAsString();
+				parseSpriteData(fileName, info);
+				parseTiles(fileName, info.get("tiles").getAsJsonArray());
+				if (info.has("ascii")) {
+					parseFallback(fileName, info.get("ascii").getAsJsonArray());
+				}
+			});
+
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
+	private void parseFallback(String file, JsonArray arr) {
+		arr.forEach((a) -> {
+			FallbackTile tile = new FallbackTile();
+			tile.read(a.getAsJsonObject());
+			addFallback(file, tile);
+		});
+	}
+
+	private void parseSpriteData(String file, JsonObject obj) {
+		SheetData data = new SheetData();
+		if (data.read(obj)) {
+			fileSheets.put(file, data);
+		}
+	}
+
+	private void parseTiles(String file, JsonArray arr) {
+		arr.forEach((a) -> {
+			ImageTile tile = new ImageTile();
+			tile.read(a.getAsJsonObject());
+			addTile(file, tile);
+		});
+	}
+
 	public void save(File dest) {
 		while(!dest.isDirectory()) {
 			dest = dest.getParentFile();
@@ -94,32 +178,6 @@ public class Tileset extends TilesetStub {
 		
 		File jsonFile = new File(dest, jsonName);
 		saveJson(jsonFile);
-	}
-
-	public Set<String> getSheetNames() {
-		return byFile.keySet();
-	}
-
-	public void addTile(String file, ImageTile tile) {
-		getListFor(byFile, file).add(tile);
-		for (String id : tile.id) {
-			getListFor(byId, id).add(tile);
-		}
-		tiles.add(tile);
-	}
-
-	public void addFallback(String file, FallbackTile tile) {
-		getListFor(byFile, file).add(tile);
-		fallback.add(tile);
-	}
-
-	private List<Tile> getListFor(Map<String, List<Tile>> ref, String id) {
-		List<Tile> tiles = ref.get(id);
-		if (tiles == null) {
-			tiles = new ArrayList<Tile>();
-			ref.put(id, tiles);
-		}
-		return tiles;
 	}
 
 	public boolean saveJson(File file) {
@@ -184,64 +242,6 @@ public class Tileset extends TilesetStub {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public boolean loadJson(File file) {
-		try (Reader r = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
-			JsonParser parser = new JsonParser();
-			JsonObject root = parser.parse(r).getAsJsonObject();
-
-			JsonArray tileInfo = root.get("tile_info").getAsJsonArray();
-			tileInfo.forEach((a) -> {
-				JsonObject info = a.getAsJsonObject();
-				if (info.has("height")) {
-					tileHeight = info.get("height").getAsInt();
-				}
-				if (info.has("width")) {
-					tileWidth = info.get("width").getAsInt();
-				}
-			});
-
-			JsonArray tilesNew = root.get("tiles-new").getAsJsonArray();
-			tilesNew.forEach((a) -> {
-				JsonObject info = a.getAsJsonObject();
-				String fileName = info.get("file").getAsString();
-				parseSpriteData(fileName, info);
-				parseTiles(fileName, info.get("tiles").getAsJsonArray());
-				if (info.has("ascii")) {
-					parseFallback(fileName, info.get("ascii").getAsJsonArray());
-				}
-			});
-
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
-	private void parseSpriteData(String file, JsonObject obj) {
-		SheetData data = new SheetData();
-		if (data.read(obj)) {
-			fileSheets.put(file, data);
-		}
-	}
-
-	private void parseFallback(String file, JsonArray arr) {
-		arr.forEach((a) -> {
-			FallbackTile tile = new FallbackTile();
-			tile.read(a.getAsJsonObject());
-			addFallback(file, tile);
-		});
-	}
-
-	private void parseTiles(String file, JsonArray arr) {
-		arr.forEach((a) -> {
-			ImageTile tile = new ImageTile();
-			tile.read(a.getAsJsonObject());
-			addTile(file, tile);
-		});
 	}
 
 }

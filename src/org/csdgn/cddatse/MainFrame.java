@@ -63,100 +63,6 @@ public class MainFrame extends JFrame {
 
 	}
 
-	protected void updateTitle() {
-		if (tileset == null) {
-			setTitle(Version.getVersionString());
-		} else {
-			setTitle(Version.getVersionString() + " - " + tileset.view);
-		}
-	}
-
-	private void enableControls(boolean enable) {
-		for (JComponent comp : disabledControls) {
-			comp.setEnabled(enable);
-		}
-	}
-
-	private void load(TilesetStub stub) {
-		if (stub == null) {
-			tileset = null;
-			updateTitle();
-			setContentPane(new JPanel());
-			enableControls(false);
-			invalidate();
-			revalidate();
-			return;
-		}
-		tileset = new Tileset();
-		tileset.load(stub);
-		updateTitle();
-		setContentPane(new MainPanel(this, tileset));
-		enableControls(true);
-		invalidate();
-		revalidate();
-	}
-
-	private void loadStubs(JMenu menu, File file) {
-		if (file == null) {
-			return;
-		}
-		for (File f : file.listFiles()) {
-			if (f.isDirectory()) {
-				loadStubs(menu, f);
-			} else if (f.getName().endsWith("tileset.txt")) {
-				TilesetStub stub = new TilesetStub();
-				if (stub.load(f)) {
-					JMenuItem item = new JMenuItem();
-					item.setText(stub.view);
-					item.addActionListener(e -> {
-						load(stub);
-					});
-					menu.add(item);
-				}
-			}
-		}
-	}
-
-	private JMenu createOpenMenu() {
-		JMenu menu = new JMenu("Open");
-		menu.setMnemonic(KeyEvent.VK_O);
-
-		JMenuItem item;
-
-		item = new JMenuItem("Open File");
-		item.setMnemonic(KeyEvent.VK_O);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
-		item.setEnabled(false);
-		menu.add(item);
-
-		item = new JMenuItem("Refresh List");
-		item.setMnemonic(KeyEvent.VK_R);
-		menu.add(item);
-
-		menu.addSeparator();
-
-		int count = menu.getMenuComponentCount();
-
-		if (options.gamePath != null) {
-			loadStubs(menu, new File(options.gamePath, "gfx"));
-		}
-
-		item.addActionListener(e -> {
-			while (menu.getMenuComponentCount() > count) {
-				menu.remove(count);
-			}
-			if (options.gamePath != null) {
-				loadStubs(menu, new File(options.gamePath, "gfx"));
-			}
-		});
-
-		return menu;
-	}
-
-	private void save() {
-		tileset.save(tileset.file);
-	}
-
 	private JMenu createFileMenu() {
 		JMenu menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
@@ -232,8 +138,102 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 
+	private JMenu createOpenMenu() {
+		JMenu menu = new JMenu("Open");
+		menu.setMnemonic(KeyEvent.VK_O);
+
+		JMenuItem item;
+
+		item = new JMenuItem("Open File");
+		item.setMnemonic(KeyEvent.VK_O);
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		item.setEnabled(false);
+		menu.add(item);
+
+		item = new JMenuItem("Refresh List");
+		item.setMnemonic(KeyEvent.VK_R);
+		menu.add(item);
+
+		menu.addSeparator();
+
+		int count = menu.getMenuComponentCount();
+
+		if (options.gamePath != null) {
+			loadStubs(menu, new File(options.gamePath, "gfx"));
+		}
+
+		item.addActionListener(e -> {
+			while (menu.getMenuComponentCount() > count) {
+				menu.remove(count);
+			}
+			if (options.gamePath != null) {
+				loadStubs(menu, new File(options.gamePath, "gfx"));
+			}
+		});
+
+		return menu;
+	}
+
 	public void dispose() {
 		options.save();
 		super.dispose();
+	}
+
+	private void enableControls(boolean enable) {
+		for (JComponent comp : disabledControls) {
+			comp.setEnabled(enable);
+		}
+	}
+
+	private void load(TilesetStub stub) {
+		if (stub == null) {
+			tileset = null;
+			updateTitle();
+			setContentPane(new JPanel());
+			enableControls(false);
+			invalidate();
+			revalidate();
+			return;
+		}
+		tileset = new Tileset();
+		tileset.load(stub);
+		updateTitle();
+		setContentPane(new MainPanel(this, tileset));
+		enableControls(true);
+		invalidate();
+		revalidate();
+	}
+
+	private void loadStubs(JMenu menu, File file) {
+		if (file == null) {
+			return;
+		}
+		for (File f : file.listFiles()) {
+			if (f.isDirectory()) {
+				loadStubs(menu, f);
+			} else if (f.getName().endsWith("tileset.txt")) {
+				TilesetStub stub = new TilesetStub();
+				if (stub.load(f)) {
+					JMenuItem item = new JMenuItem();
+					item.setText(stub.view);
+					item.addActionListener(e -> {
+						load(stub);
+					});
+					menu.add(item);
+				}
+			}
+		}
+	}
+
+	private void save() {
+		tileset.save(tileset.file);
+	}
+
+	protected void updateTitle() {
+		if (tileset == null) {
+			setTitle(Version.getVersionString());
+		} else {
+			setTitle(Version.getVersionString() + " - " + tileset.view);
+		}
 	}
 }
