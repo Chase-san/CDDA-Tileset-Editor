@@ -8,7 +8,7 @@
 
 	<!-- Your settings, all you need to change is here -->
 	<description>Ant Build Script</description>
-	<property name="build.version" value="7" />
+	<property name="build.version" value="8" />
 
 	<property file="version.number" />
 	<property name="version.file" value="src/org/csdgn/cddatse/Version.java" />
@@ -28,7 +28,7 @@
 	<property name="jar.mainclass" value="org.csdgn.cddatse.Main" />
 
 	<path id="project.class.path">
-		<pathelement location="${lib.dir}/gson-2.2.4.jar" />
+		<pathelement location="${lib.dir}/gson-2.8.5.jar" />
 	</path>
 
 	<!-- Nothing to see past here folks, move along. -->
@@ -48,7 +48,7 @@
 
 		<!-- Compile with no debugging info -->
 		<javac srcdir="${src.dir}" destdir="${bin.dir}" includeAntRuntime="no" encoding="UTF-8"
-		 	target="${build.version}" source="${build.version}" debug="off">
+		 	target="${build.version}" source="${build.version}" debug="on">
 			<exclude name="demo/*.java"/>
 			<exclude name="test/*.java"/>
 			<classpath refid="project.class.path" />

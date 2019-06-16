@@ -38,6 +38,7 @@ public class ImageTilePanel extends JPanel {
 
 	public ImageTilePanel(MainPanel main, ImageTile tile) {
 		this.tile = tile;
+		this.main = main;
 
 		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		setLayout(new BorderLayout());
