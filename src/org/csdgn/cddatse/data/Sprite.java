@@ -22,6 +22,44 @@
  */
 package org.csdgn.cddatse.data;
 
-public interface Tile {
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+public class Sprite {
+	public Set<Integer> sprite;
+	public Integer weight;
+	
+	public Sprite() {
+		sprite = new LinkedHashSet<Integer>();
+		weight = null;
+	}
+	
+	public Sprite(JsonElement ele) {
+		sprite = new LinkedHashSet<Integer>();
+		weight = null;
+		setJson(ele);
+	}
+	
+	public void setJson(JsonElement ele) {
+		if (ele.isJsonObject()) {
+			JsonObject obj = ele.getAsJsonObject();
+			sprite.addAll(JsonToolkit.ints(obj.get("sprite")));
+			weight = obj.get("weight").getAsInt();
+		} else {
+			sprite.add(ele.getAsInt());
+		}
+	}
+	
+	public JsonElement getJson() {
+		if(weight == null) {
+			return JsonToolkit.ints(sprite);
+		}
+		JsonObject obj = new JsonObject();
+		obj.add("sprite", JsonToolkit.ints(sprite));
+		obj.addProperty("weight", weight);
+		return obj;
+	}
 }

@@ -22,6 +22,50 @@
  */
 package org.csdgn.cddatse.data;
 
-public interface Tile {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
+public class TilesetStub {
+	public String name;
+	public String view;
+	public File file;
+	public File json;
+
+	public boolean load(File file) {
+		try (Reader r = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+
+			LineNumberReader lnr = new LineNumberReader(r);
+
+			// NAME : ???
+			// VIEW : ???
+			// JSON : ???
+			String line = null;
+			while ((line = lnr.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("NAME")) {
+					name = line.substring(line.indexOf(":") + 1).trim();
+				} else if (line.startsWith("VIEW")) {
+					view = line.substring(line.indexOf(":") + 1).trim();
+				} else if (line.startsWith("JSON")) {
+					line = line.substring(line.indexOf(":") + 1).trim();
+					json = new File(file.getParentFile(), line).getAbsoluteFile();
+				}
+			}
+
+			this.file = file;
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		name = null;
+		view = null;
+		file = null;
+		json = null;
+		return false;
+	}
 }

@@ -22,6 +22,46 @@
  */
 package org.csdgn.cddatse.data;
 
-public interface Tile {
+import com.google.gson.JsonObject;
 
+public class SheetData {
+	public int width;
+	public int height;
+	public int offsetX;
+	public int offsetY;
+
+	public SheetData() {
+		width = 1;
+		height = 1;
+		offsetX = 0;
+		offsetY = 0;
+	}
+
+	public boolean read(JsonObject obj) {
+		boolean hasData = false;
+		if (obj.has("sprite_width")) {
+			width = obj.get("sprite_width").getAsInt();
+			hasData = true;
+		}
+		if (obj.has("sprite_height")) {
+			height = obj.get("sprite_height").getAsInt();
+			hasData = true;
+		}
+		if (obj.has("sprite_offset_x")) {
+			offsetX = obj.get("sprite_offset_x").getAsInt();
+			hasData = true;
+		}
+		if (obj.has("sprite_offset_y")) {
+			offsetY = obj.get("sprite_offset_y").getAsInt();
+			hasData = true;
+		}
+		return hasData;
+	}
+	
+	public void write(JsonObject obj) {
+		obj.addProperty("sprite_width", width);
+		obj.addProperty("sprite_height", height);
+		obj.addProperty("sprite_offset_x", offsetX);
+		obj.addProperty("sprite_offset_y", offsetY);
+	}
 }

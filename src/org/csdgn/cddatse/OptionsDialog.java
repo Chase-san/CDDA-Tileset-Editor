@@ -1,173 +1,97 @@
+/**
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2014-2019 Robert Maupin
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package org.csdgn.cddatse;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.Window;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
-import java.awt.GridBagLayout;
-
-import javax.swing.JLabel;
-
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.JTextField;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.io.File;
 
-import javax.swing.JCheckBox;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import org.csdgn.maru.swing.TableLayout;
 
 public class OptionsDialog extends JDialog {
-	private static final long serialVersionUID = 1272784812120208635L;
+	private static final long serialVersionUID = -3772481664983484013L;
 
-	private final JPanel contentPanel = new JPanel();
-	private JFileChooser folderChooser = null;
-	private JTextField txtCDDADir;
+	private Options options;
 
-	/**
-	 * Create the dialog.
-	 */
-	public OptionsDialog(Window window) {
+	public OptionsDialog(Window window, Options options) {
 		super(window);
 		setResizable(false);
 		setModal(true);
 		setTitle("Options");
-		setBounds(100, 100, 400, 140);
-		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		GridBagLayout gbl_contentPanel = new GridBagLayout();
-		gbl_contentPanel.columnWidths = new int[] { 0, 0, 0 };
-		gbl_contentPanel.rowHeights = new int[] { 0, 0, 0, 0 };
-		gbl_contentPanel.columnWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
-		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
-		contentPanel.setLayout(gbl_contentPanel);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, 400, 200);
+		setLocationRelativeTo(window);
 
-		JLabel lblCataclysmDdaDirectory = new JLabel("Cataclysm: DDA Directory");
-		GridBagConstraints gbc_lblCataclysmDdaDirectory = new GridBagConstraints();
-		gbc_lblCataclysmDdaDirectory.anchor = GridBagConstraints.WEST;
-		gbc_lblCataclysmDdaDirectory.insets = new Insets(0, 0, 5, 5);
-		gbc_lblCataclysmDdaDirectory.gridx = 0;
-		gbc_lblCataclysmDdaDirectory.gridy = 0;
-		contentPanel.add(lblCataclysmDdaDirectory, gbc_lblCataclysmDdaDirectory);
+		this.options = options;
+		setContentPane(createPanel());
+		
+		pack();
 
-		txtCDDADir = new JTextField();
-		txtCDDADir.setEditable(false);
-		GridBagConstraints gbc_txtCDDADir = new GridBagConstraints();
-		gbc_txtCDDADir.insets = new Insets(0, 0, 5, 5);
-		gbc_txtCDDADir.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtCDDADir.gridx = 0;
-		gbc_txtCDDADir.gridy = 1;
-		contentPanel.add(txtCDDADir, gbc_txtCDDADir);
-		txtCDDADir.setColumns(10);
+	}
 
-		if (Options.cataclysmDirectory != null) {
-			txtCDDADir.setText(Options.cataclysmDirectory.getAbsolutePath());
-		}
-		JButton btnBrowse = new JButton("Browse");
-		btnBrowse.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				File folder = browseForJsonFolder();
-				if (folder != null) {
-					txtCDDADir.setText(folder.getAbsolutePath());
-				}
+	public JPanel createPanel() {
+		JPanel panel = new JPanel(new TableLayout(4, 4, true));
+		panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+
+		JLabel label = new JLabel("Game Path");
+		JTextField text = new JTextField(options.getGamePathString());
+		text.addCaretListener(e -> {
+			File file = new File(text.getText());
+			if (file.exists()) {
+				options.gamePath = file;
 			}
 		});
-		GridBagConstraints gbc_btnBrowse = new GridBagConstraints();
-		gbc_btnBrowse.insets = new Insets(0, 0, 5, 0);
-		gbc_btnBrowse.gridx = 1;
-		gbc_btnBrowse.gridy = 1;
-		contentPanel.add(btnBrowse, gbc_btnBrowse);
-		
-		final JCheckBox chckbxPrettyPrintJson = new JCheckBox("Pretty Print JSON");
-		GridBagConstraints gbc_chckbxPrettyPrintJson = new GridBagConstraints();
-		gbc_chckbxPrettyPrintJson.anchor = GridBagConstraints.WEST;
-		gbc_chckbxPrettyPrintJson.insets = new Insets(0, 0, 0, 5);
-		gbc_chckbxPrettyPrintJson.gridx = 0;
-		gbc_chckbxPrettyPrintJson.gridy = 2;
-		chckbxPrettyPrintJson.setSelected(Options.prettyPrint);
-		contentPanel.add(chckbxPrettyPrintJson, gbc_chckbxPrettyPrintJson);
-		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			{
-				JButton okButton = new JButton("OK");
-				okButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// update options
-						File file = new File(txtCDDADir.getText());
-						if (file.exists()) {
-							Options.cataclysmDirectory = file;
-						}
-						Options.prettyPrint = chckbxPrettyPrintJson.isSelected();
-						setVisible(false);
-					}
-				});
-				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
+		JButton browse = new JButton("Browse");
+		browse.addActionListener(e -> {
+			File dir = options.browseForDirectory(this, "Select CDDA Directory");
+			if(dir != null) {
+				text.setText(dir.getAbsolutePath());
+				options.gamePath = dir;
 			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						setVisible(false);
-					}
-				});
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
-			}
-		}
+		});
+
+		panel.add(label, "x=0;y=0");
+		panel.add(text, "x=1;y=0;w=300");
+		panel.add(browse, "x=2;y=0");
 		
-		setLocationRelativeTo(window);
+		//OK Button
+		JButton ok = new JButton("OK");
+		ok.addActionListener(e -> {
+			dispose();
+		});
+		panel.add(ok, "colspan=3;x=0;y=1");
+
+		return panel;
 	}
 
-	private void warnIfBadData() {
-		File file = new File(txtCDDADir.getText());
-		if (!file.exists()) {
-			AppToolkit.showWarning(this,
-					"It is highly suggested you set the cataclysm directory, some functions will not be avaiable otherwise.");
-		}
+	public void dispose() {
+		options.save();
+		super.dispose();
 	}
-
-	private File browseForJsonFolder() {
-		if (folderChooser == null) {
-			AppToolkit.setFileChooserReadOnly(true);
-			folderChooser = new JFileChooser();
-			folderChooser.setDialogTitle("Select Cataclysm-DDA folder");
-			folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		}
-
-		folderChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
-
-		if (folderChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-			return null;
-		}
-
-		Options.lastBrowsedDirectory = folderChooser.getCurrentDirectory();
-
-		File file = folderChooser.getSelectedFile();
-		if (!file.isDirectory()) {
-			file = file.getParentFile();
-		}
-
-		return file;
-	}
-	
-	public void setVisible(boolean visible) {
-		if(!visible) {
-			warnIfBadData();
-		}
-		super.setVisible(visible);
-	}
-
 }

@@ -1,3 +1,25 @@
+/**
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2014-2019 Robert Maupin
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package org.csdgn.cddatse;
 
 import java.awt.Component;
@@ -8,23 +30,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
-import javax.swing.filechooser.FileFilter;
-
-import org.csdgn.maru.io.EndsWithFileFilter;
 
 public class AppToolkit {
 	public static void setFileChooserReadOnly(boolean readOnly) {
 		UIManager.put("FileChooser.readOnly", readOnly);
 	}
-	
+
 	private static File directory = null;
 	private static ArrayList<Image> icons = null;
-	
+
 	/**
 	 * Gets the directory for the program.
 	 */
@@ -123,69 +140,36 @@ public class AppToolkit {
 
 		return null;
 	}
-	
+
 	public static void showError(Component owner, String message) {
 		JOptionPane.showMessageDialog(owner, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
-	
+
 	public static void showWarning(Component owner, String message) {
 		JOptionPane.showMessageDialog(owner, message, "Warning", JOptionPane.WARNING_MESSAGE);
 	}
-	
+
 	public static int confirmWarning(Component owner, String message) {
-		return JOptionPane.showConfirmDialog(owner, message, "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+		return JOptionPane.showConfirmDialog(owner, message, "Warning", JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 	}
-	
+
 	public static int showYesNoOption(Component owner, String message, String title) {
 		return JOptionPane.showConfirmDialog(owner, message, title, JOptionPane.YES_NO_OPTION);
 	}
-	
+
 	public static boolean isEqual(BufferedImage a, BufferedImage b) {
 		int width = a.getWidth();
 		int height = a.getHeight();
-		
-		for(int y = 0; y < height; y++){
-			for(int x = 0; x < width; x++) {
-				if( a.getRGB(x, y) != b.getRGB(x, y) ) {
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				if (a.getRGB(x, y) != b.getRGB(x, y)) {
 					return false;
 				}
 			}
-        }
-		
+		}
+
 		return true;
-	}
-	
-
-	private static JFileChooser imageChooser = null;
-	public static BufferedImage browseForImage(Component parent, String title) {
-		if (imageChooser == null) {
-			AppToolkit.setFileChooserReadOnly(true);
-			imageChooser = new JFileChooser();
-			FileFilter filter = new EndsWithFileFilter("Image File", ".png", ".jpg", ".gif", ".bmp");
-			imageChooser.addChoosableFileFilter(filter);
-			imageChooser.setFileFilter(filter);
-		}
-		
-		imageChooser.setDialogTitle(title);
-		imageChooser.setCurrentDirectory(Options.lastBrowsedDirectory);
-
-		if (imageChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) {
-			return null;
-		}
-		
-		Options.lastBrowsedDirectory = imageChooser.getCurrentDirectory();
-
-		File file = imageChooser.getSelectedFile();
-		if (!file.exists()) {
-			return null;
-		}
-
-		try {
-			return ImageIO.read(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
 	}
 }

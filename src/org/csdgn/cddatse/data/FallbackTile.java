@@ -22,6 +22,32 @@
  */
 package org.csdgn.cddatse.data;
 
-public interface Tile {
+import com.google.gson.JsonObject;
 
+public class FallbackTile implements Tile {
+	public int offset;
+	public boolean bold;
+	public String color;
+	
+	public void FallbackTile() {
+		bold = false;
+		color = "WHITE";
+	}
+	
+	public void read(JsonObject obj) {
+		offset = obj.get("offset").getAsInt();
+		
+		if(obj.has("bold")) {
+			bold = obj.get("bold").getAsBoolean();
+		}
+		if(obj.has("color")) {
+			color = obj.get("color").getAsString();
+		}
+	}
+	
+	public void write(JsonObject obj) {
+		obj.addProperty("offset", offset);
+		obj.addProperty("bold", bold);
+		obj.addProperty("color", color);
+	}
 }
