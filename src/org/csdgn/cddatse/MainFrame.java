@@ -153,6 +153,10 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 
+	private void save() {
+		tileset.save(tileset.file);
+	}
+
 	private JMenu createFileMenu() {
 		JMenu menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_F);
@@ -172,14 +176,17 @@ public class MainFrame extends JFrame {
 		item.setMnemonic(KeyEvent.VK_S);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
 		item.setEnabled(false);
-		// disabledControls.add(item);
+		item.addActionListener(e -> {
+			save();
+		});
+		disabledControls.add(item);
 		menu.add(item);
 
 		item = new JMenuItem("Save As");
 		item.setMnemonic(KeyEvent.VK_A);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
 		item.setEnabled(false);
-		// disabledControls.add(item);
+		//disabledControls.add(item);
 		menu.add(item);
 
 		menu.addSeparator();

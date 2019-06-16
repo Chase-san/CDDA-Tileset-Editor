@@ -25,6 +25,7 @@ package org.csdgn.cddatse.data;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -68,6 +69,31 @@ public class Tileset extends TilesetStub {
 		file = stub.file;
 
 		loadJson(json);
+	}
+	
+	public void save(File dest) {
+		while(!dest.isDirectory()) {
+			dest = dest.getParentFile();
+		}
+		
+		File mainFile = new File(dest, "tileset.txt");
+		String jsonName = json.getName();
+		
+		try (Writer w = new OutputStreamWriter(new FileOutputStream(mainFile), StandardCharsets.UTF_8)) {
+			w.append("NAME: ");
+			w.append(name);
+			w.append("\nVIEW: ");
+			w.append(view);
+			w.append("\nJSON: ");
+			w.append(jsonName);
+			w.append("\nTILESET: ");
+			w.append(byFile.keySet().iterator().next());
+			w.flush();
+		} catch (IOException e) {
+		}
+		
+		File jsonFile = new File(dest, jsonName);
+		saveJson(jsonFile);
 	}
 
 	public Set<String> getSheetNames() {
