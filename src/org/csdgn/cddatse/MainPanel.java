@@ -89,7 +89,7 @@ public class MainPanel extends JPanel {
 		});
 		filterPanel.add(filter, BorderLayout.CENTER);
 
-		panel.add(filterPanel, BorderLayout.SOUTH);
+		panel.add(filterPanel, BorderLayout.NORTH);
 
 		return panel;
 	}
@@ -105,7 +105,10 @@ public class MainPanel extends JPanel {
 
 		JComboBox<String> box = new JComboBox<String>();
 		for (String name : tileset.getSheetNames()) {
-			box.addItem(name);
+			if(!name.contains("fallback")) {
+				box.addItem(name);
+			}
+			
 		}
 		box.addActionListener(e -> {
 			sheet = (String) box.getSelectedItem();
