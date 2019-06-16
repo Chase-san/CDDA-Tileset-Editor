@@ -5,7 +5,7 @@ A tileset editor for Cataclysm DDA.
 Warning: The source is a complete mess. Completely hacked together.
 
 
-##Licensing
+## Licensing
 
 The code and the icon have different licenses, see ICONLICENSE.
 
