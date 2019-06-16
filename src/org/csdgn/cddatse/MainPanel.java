@@ -29,11 +29,15 @@ public class MainPanel extends JPanel {
 	private MainFrame frame;
 	private DefaultListModel<ImageTile> model;
 	private String sheet;
+	private String filter;
 	private Tileset tileset;
 
 	public MainPanel(MainFrame frame, Tileset tileset) {
 		this.frame = frame;
 		this.tileset = tileset;
+
+		sheet = "";
+		filter = "";
 
 		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		setLayout(new BorderLayout());
@@ -49,6 +53,7 @@ public class MainPanel extends JPanel {
 
 	private JPanel createSidePanel() {
 		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
 
 		model = new DefaultListModel<ImageTile>();
 		updateList();
@@ -69,6 +74,23 @@ public class MainPanel extends JPanel {
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add(scroll, BorderLayout.CENTER);
+
+		// Filter
+		JPanel filterPanel = new JPanel(new BorderLayout(4, 4));
+		filterPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+		filterPanel.add(new JLabel("Filter"), BorderLayout.WEST);
+
+		JTextField filter = new JTextField();
+		filter.addCaretListener(e -> {
+			String temp = filter.getText();
+			if(!temp.trim().equals(this.filter)) {
+				this.filter = temp;
+				updateList();
+			}
+		});
+		filterPanel.add(filter, BorderLayout.CENTER);
+
+		panel.add(filterPanel, BorderLayout.SOUTH);
 
 		return panel;
 	}
@@ -132,7 +154,23 @@ public class MainPanel extends JPanel {
 		for (Tile tile : tileset.byFile.get(sheet)) {
 			if (tile instanceof ImageTile) {
 				ImageTile it = (ImageTile) tile;
-				model.addElement(it);
+
+				boolean add = false;
+				if (filter.length() > 0) {
+					for (String id : it.id) {
+						if (id.contains(filter)) {
+							add = true;
+							break;
+						}
+					}
+				} else {
+					add = true;
+				}
+
+				if (add) {
+					model.addElement(it);
+				}
+
 			}
 		}
 	}
