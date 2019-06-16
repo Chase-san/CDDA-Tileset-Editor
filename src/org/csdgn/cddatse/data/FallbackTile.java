@@ -29,7 +29,7 @@ public class FallbackTile implements Tile {
 	public boolean bold;
 	public String color;
 	
-	public void FallbackTile() {
+	public FallbackTile() {
 		bold = false;
 		color = "WHITE";
 	}
