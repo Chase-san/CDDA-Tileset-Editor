@@ -1,7 +1,12 @@
 package org.csdgn.cddatse.data;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -12,12 +17,18 @@ public class TileSubset {
 	public int height;
 	public int offsetX;
 	public int offsetY;
+	/** TODO
+	 * "transparency": { "R": 0, "G": 0, "B": 0 },
+	 */
 
+	public List<BufferedImage> sprites;
 	public List<FallbackTile> fallback;
 	public List<ImageTile> tiles;
+	private BufferedImage image;
 	public Tileset tileset;
 
 	public TileSubset(Tileset set) {
+		sprites = new ArrayList<BufferedImage>();
 		fallback = new ArrayList<FallbackTile>();
 		tiles = new ArrayList<ImageTile>();
 
@@ -27,13 +38,20 @@ public class TileSubset {
 		offsetX = 0;
 		offsetY = 0;
 	}
+	
+	public void finalize() throws Throwable {
+		image.flush();
+		super.finalize();
+	}
 
 	public void read(JsonObject obj) {
 		imageFile = obj.get("file").getAsString();
 		readSpriteData(obj);
 
+		loadImage();
+		
 		obj.get("tiles").getAsJsonArray().forEach((a) -> {
-			ImageTile tile = new ImageTile();
+			ImageTile tile = new ImageTile(this);
 			tile.read(a.getAsJsonObject());
 			tiles.add(tile);
 		});
@@ -41,6 +59,29 @@ public class TileSubset {
 		if (obj.has("ascii")) {
 			parseFallback(obj.get("ascii").getAsJsonArray());
 		}
+
+	}
+
+	private void loadImage() {
+		try {
+			image = ImageIO.read(new File(tileset.file.getParentFile(), imageFile));
+			
+			//split image based on tileWidth/tileHeight
+			int cols = image.getWidth() / width - 1;
+			int rows = image.getHeight() / height - 1;
+			
+			for(int col = 0; col < cols; ++col) {
+				int x = cols * width;
+				for(int row = 0; row < rows; ++row) {
+					int y = row * height;
+					sprites.add(image.getSubimage(x, y, width, height));
+				}
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	public void write(JsonObject obj) {
@@ -107,5 +148,13 @@ public class TileSubset {
 		if (offsetX != 0) {
 			obj.addProperty("sprite_offset_y", offsetY);
 		}
+	}
+	
+	protected BufferedImage getImageFromIndex(int index) {
+		if(index >= sprites.size()) {
+			//TODO some fallback
+			return null;
+		}
+		return sprites.get(index);
 	}
 }

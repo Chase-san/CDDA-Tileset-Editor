@@ -33,36 +33,40 @@ import com.google.gson.JsonObject;
 
 public class ImageTile {
 
+	private TileSubset subset;
+	
 	public Set<String> id;
-	public Set<Sprite> fg;
-	public Set<Sprite> bg;
+	public Set<SpriteSet> fg;
+	public Set<SpriteSet> bg;
 	public boolean rotates;
 	public Set<ImageTile> extra;
 
-	public ImageTile() {
+	public ImageTile(TileSubset subset) {
+		this.subset = subset;
+		
 		id = new LinkedHashSet<String>();
-		fg = new LinkedHashSet<Sprite>();
-		bg = new LinkedHashSet<Sprite>();
+		fg = new LinkedHashSet<SpriteSet>();
+		bg = new LinkedHashSet<SpriteSet>();
 		extra = new LinkedHashSet<ImageTile>();
 		rotates = false;
 	}
 
-	private List<Sprite> setSprites(JsonElement ele) {
-		List<Sprite> out = new ArrayList<Sprite>();
+	private List<SpriteSet> setSprites(JsonElement ele) {
+		List<SpriteSet> out = new ArrayList<SpriteSet>();
 		if (ele.isJsonArray()) {
 			ele.getAsJsonArray().forEach((value) -> {
-				out.add(new Sprite(value));
+				out.add(new SpriteSet(subset, value));
 			});
 		} else {
-			out.add(new Sprite(ele));
+			out.add(new SpriteSet(subset, ele));
 		}
 		return out;
 	}
 
-	private JsonElement getSprites(Set<Sprite> set) {
+	private JsonElement getSprites(Set<SpriteSet> set) {
 		if (set.size() > 1) {
 			JsonArray array = new JsonArray();
-			for (Sprite sprite : set) {
+			for (SpriteSet sprite : set) {
 				array.add(sprite.getJson());
 			}
 			return array;
@@ -87,7 +91,7 @@ public class ImageTile {
 		if (obj.has("additional_tiles")) {
 			JsonArray array = obj.get("additional_tiles").getAsJsonArray();
 			array.forEach((ele) -> {
-				ImageTile tile = new ImageTile();
+				ImageTile tile = new ImageTile(subset);
 				tile.read(ele.getAsJsonObject());
 				extra.add(tile);
 			});
