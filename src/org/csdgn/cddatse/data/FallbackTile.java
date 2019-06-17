@@ -24,7 +24,7 @@ package org.csdgn.cddatse.data;
 
 import com.google.gson.JsonObject;
 
-public class FallbackTile implements Tile {
+public class FallbackTile {
 	public int offset;
 	public boolean bold;
 	public String color;

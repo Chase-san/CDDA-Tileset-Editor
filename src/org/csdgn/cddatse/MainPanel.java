@@ -17,7 +17,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 import org.csdgn.cddatse.data.ImageTile;
-import org.csdgn.cddatse.data.Tile;
 import org.csdgn.cddatse.data.Tileset;
 import org.csdgn.maru.swing.MultilineCellRenderer;
 
@@ -105,10 +104,10 @@ public class MainPanel extends JPanel {
 
 		JComboBox<String> box = new JComboBox<String>();
 		for (String name : tileset.getSheetNames()) {
-			if(!name.contains("fallback")) {
+			if (!name.contains("fallback")) {
 				box.addItem(name);
 			}
-			
+
 		}
 		box.addActionListener(e -> {
 			sheet = (String) box.getSelectedItem();
@@ -153,7 +152,8 @@ public class MainPanel extends JPanel {
 
 	private void updateList() {
 		model.removeAllElements();
-		for (Tile tile : tileset.byFile.get(sheet)) {
+
+		for (ImageTile tile : tileset.subsets.get(sheet).tiles) {
 			if (tile instanceof ImageTile) {
 				ImageTile it = (ImageTile) tile;
 

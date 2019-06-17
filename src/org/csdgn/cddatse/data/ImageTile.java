@@ -31,7 +31,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class ImageTile implements Tile {
+public class ImageTile {
 
 	public Set<String> id;
 	public Set<Sprite> fg;
