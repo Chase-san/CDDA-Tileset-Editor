@@ -22,43 +22,53 @@
  */
 package org.csdgn.cddatse.data;
 
+import java.awt.image.BufferedImage;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class Sprite {
-	public Set<Integer> sprite;
+public class SpriteSet {
+	private TileSubset subset;
+	public Set<BufferedImage> sprite;
 	public Integer weight;
 
-	public Sprite() {
-		sprite = new LinkedHashSet<Integer>();
+	public SpriteSet(TileSubset subset) {
+		this.subset = subset;
+		sprite = new LinkedHashSet<BufferedImage>();
 		weight = null;
 	}
 
-	public Sprite(JsonElement ele) {
-		sprite = new LinkedHashSet<Integer>();
+	public SpriteSet(TileSubset subset, JsonElement ele) {
+		this.subset = subset;
+		sprite = new LinkedHashSet<BufferedImage>();
 		weight = null;
-		setJson(ele);
+		setFromJson(ele);
 	}
-
-	public void setJson(JsonElement ele) {
+	
+	
+	
+	public void setFromJson(JsonElement ele) {
 		if (ele.isJsonObject()) {
 			JsonObject obj = ele.getAsJsonObject();
-			sprite.addAll(JsonToolkit.ints(obj.get("sprite")));
+			
+			for(int index : JsonToolkit.ints(obj.get("sprite"))) {
+				sprite.add(subset.getImageFromIndex(index));
+			}
+			
 			weight = obj.get("weight").getAsInt();
 		} else {
-			sprite.add(ele.getAsInt());
+			sprite.add(subset.getImageFromIndex(ele.getAsInt()));
 		}
 	}
 
 	public JsonElement getJson() {
 		if (weight == null) {
-			return JsonToolkit.ints(sprite);
+			//return JsonToolkit.ints(sprite);
 		}
 		JsonObject obj = new JsonObject();
-		obj.add("sprite", JsonToolkit.ints(sprite));
+		//obj.add("sprite", JsonToolkit.ints(sprite));
 		obj.addProperty("weight", weight);
 		return obj;
 	}

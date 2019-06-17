@@ -49,6 +49,12 @@ public class Tileset extends TilesetStub {
 	public Tileset() {
 		subsets = new LinkedHashMap<String, TileSubset>();
 	}
+	
+	public void close() {
+		for(TileSubset subset : subsets.values()) {
+			subset.close();
+		}
+	}
 
 	public Set<String> getSheetNames() {
 		return subsets.keySet();

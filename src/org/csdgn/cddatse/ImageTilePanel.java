@@ -23,8 +23,12 @@
 package org.csdgn.cddatse;
 
 import java.awt.BorderLayout;
+import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,6 +36,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.csdgn.cddatse.data.ImageTile;
+import org.csdgn.cddatse.data.SpriteSet;
 
 public class ImageTilePanel extends JPanel {
 	private static final long serialVersionUID = 6328834555090823394L;
@@ -48,7 +53,30 @@ public class ImageTilePanel extends JPanel {
 
 		// get all the name things
 		add(createIdPanel(), BorderLayout.NORTH);
-
+		add(createImagePanel(), BorderLayout.CENTER);
+	}
+	
+	private JPanel createImagePanel() {
+		//Temporary!
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		
+		boolean first = true;
+		for(SpriteSet set : tile.fg) {
+			for(BufferedImage sprite : set.sprite) {
+				if(sprite != null) {
+					if(!first) {
+						panel.add(Box.createVerticalStrut(1));
+					}
+					first = false;
+					panel.add(new JLabel(new ImageIcon(sprite)));
+					
+				}
+			}
+		}
+		
+		
+		return panel;
 	}
 	
 	private JPanel createIdPanel() {

@@ -101,7 +101,7 @@ public class MainFrame extends JFrame {
 		item.setMnemonic(KeyEvent.VK_C);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_MASK));
 		item.addActionListener(e -> {
-			load(null);
+			closeFile();
 		});
 		item.setEnabled(false);
 		disabledControls.add(item);
@@ -175,6 +175,10 @@ public class MainFrame extends JFrame {
 	}
 
 	public void dispose() {
+		if(tileset != null) {
+			//TODO ask to save
+			closeFile();
+		}
 		options.save();
 		super.dispose();
 	}
@@ -184,17 +188,20 @@ public class MainFrame extends JFrame {
 			comp.setEnabled(enable);
 		}
 	}
-
-	private void load(TilesetStub stub) {
-		if (stub == null) {
-			tileset = null;
-			updateTitle();
-			setContentPane(new JPanel());
-			enableControls(false);
-			invalidate();
-			revalidate();
-			return;
+	
+	private void closeFile() {
+		if(tileset != null) {
+			tileset.close();
 		}
+		tileset = null;
+		updateTitle();
+		setContentPane(new JPanel());
+		enableControls(false);
+		invalidate();
+		revalidate();
+	}
+
+	private void openFile(TilesetStub stub) {
 		tileset = new Tileset();
 		tileset.load(stub);
 		updateTitle();
@@ -217,7 +224,7 @@ public class MainFrame extends JFrame {
 					JMenuItem item = new JMenuItem();
 					item.setText(stub.view);
 					item.addActionListener(e -> {
-						load(stub);
+						openFile(stub);
 					});
 					menu.add(item);
 				}
