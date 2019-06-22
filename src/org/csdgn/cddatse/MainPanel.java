@@ -28,7 +28,7 @@ public class MainPanel extends JPanel {
 	private DefaultListModel<ImageTile> model;
 	private String sheet;
 	private String filter;
-	private Tileset tileset;
+	protected Tileset tileset;
 
 	public MainPanel(MainFrame frame, Tileset tileset) {
 		this.frame = frame;

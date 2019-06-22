@@ -23,6 +23,8 @@
 package org.csdgn.cddatse;
 
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -156,6 +158,21 @@ public class AppToolkit {
 
 	public static int showYesNoOption(Component owner, String message, String title) {
 		return JOptionPane.showConfirmDialog(owner, message, title, JOptionPane.YES_NO_OPTION);
+	}
+
+	public static Font getBestMonospaceFont(float size) {
+		GraphicsEnvironment g = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		String[] fonts = g.getAvailableFontFamilyNames();
+		String[] bestFonts = new String[] { "Consolas", "Inconsolata", "DejaVu Sans Mono", "FreeMono" };
+		for (String bestName : bestFonts) {
+			for (String fontName : fonts) {
+				if (fontName.equalsIgnoreCase(bestName)) {
+					return Font.decode(fontName + "-PLAIN-" + size);
+				}
+			}
+		}
+		// Fallback to whatever system monospace java can find.
+		return Font.decode(Font.MONOSPACED + "-PLAIN-" + size);
 	}
 
 	public static boolean isEqual(BufferedImage a, BufferedImage b) {

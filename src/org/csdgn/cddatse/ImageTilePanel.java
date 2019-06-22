@@ -23,16 +23,19 @@
 package org.csdgn.cddatse;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.csdgn.cddatse.data.ImageTile;
@@ -55,38 +58,79 @@ public class ImageTilePanel extends JPanel {
 		add(createIdPanel(), BorderLayout.NORTH);
 		add(createImagePanel(), BorderLayout.CENTER);
 	}
-	
+
 	private JPanel createImagePanel() {
-		//Temporary!
+		// Temporary!
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		
-		boolean first = true;
-		for(SpriteSet set : tile.fg) {
-			for(BufferedImage sprite : set.sprite) {
-				if(sprite != null) {
-					if(!first) {
-						panel.add(Box.createVerticalStrut(1));
-					}
-					first = false;
-					panel.add(new JLabel(new ImageIcon(sprite)));
-					
-				}
+
+		// find out if we need the weighted layout
+		boolean weighted = false;
+		for (SpriteSet set : tile.fg) {
+			if (set.weight != null) {
+				weighted = true;
+				break;
 			}
 		}
-		
-		
+		JCheckBox cboxWeighted = new JCheckBox("Use weighted layout?");
+		cboxWeighted.setSelected(weighted);
+		cboxWeighted.setEnabled(false);
+		panel.add(cboxWeighted);
+
+		if (weighted) {
+			for (SpriteSet set : tile.fg) {
+				JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+				spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
+				int weight = 0;
+				if(set.weight != null) {
+					weight = set.weight;
+				}
+				JTextField txtWeight = new JTextField(String.valueOf(weight));
+				txtWeight.setEnabled(false);
+				spritePanel.add(new JLabel("Weight "));
+				spritePanel.add(txtWeight);
+				
+				for (int id : set.ids) {
+					spritePanel.add(createImageButton(id));
+				}
+
+				panel.add(spritePanel);
+			}
+		} else {
+			JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+			spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
+			for (SpriteSet set : tile.fg) {
+				for (int id : set.ids) {
+					spritePanel.add(createImageButton(id));
+				}
+			}
+			panel.add(spritePanel);
+		}
+
 		return panel;
 	}
-	
+
+	private JButton createImageButton(int id) {
+		BufferedImage sprite = main.tileset.getSpriteForId(id);
+		JButton btn = new JButton();
+		if (sprite != null) {
+			btn.setIcon(new ImageIcon(sprite));
+		} else {
+			btn.setText("" + id);
+		}
+		return btn;
+	}
+
 	private JPanel createIdPanel() {
 		JPanel panel = new JPanel(new BorderLayout(4, 4));
-		
+
 		JLabel label = new JLabel("ID(s)");
 		label.setVerticalAlignment(SwingConstants.TOP);
 		panel.add(label, BorderLayout.WEST);
-		
+
 		JTextArea text = new JTextArea();
+		text.setFont(AppToolkit.getBestMonospaceFont(text.getFont().getSize2D()));
+
 		text.setText(sanitize(tile.toString()));
 		text.setRows(4);
 		text.addCaretListener(e -> {
@@ -104,7 +148,7 @@ public class ImageTilePanel extends JPanel {
 		JScrollPane scroll = new JScrollPane(text);
 
 		panel.add(scroll, BorderLayout.CENTER);
-		
+
 		return panel;
 	}
 

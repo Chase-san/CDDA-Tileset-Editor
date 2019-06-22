@@ -22,7 +22,6 @@
  */
 package org.csdgn.cddatse.data;
 
-import java.awt.image.BufferedImage;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -30,36 +29,29 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class SpriteSet {
-	private TileSubset subset;
-	public Set<BufferedImage> sprite;
+	public Set<Integer> ids;
 	public Integer weight;
 
-	public SpriteSet(TileSubset subset) {
-		this.subset = subset;
-		sprite = new LinkedHashSet<BufferedImage>();
+	public SpriteSet() {
+		ids = new LinkedHashSet<Integer>();
 		weight = null;
 	}
 
-	public SpriteSet(TileSubset subset, JsonElement ele) {
-		this.subset = subset;
-		sprite = new LinkedHashSet<BufferedImage>();
+	public SpriteSet(JsonElement ele) {
+		ids = new LinkedHashSet<Integer>();
 		weight = null;
 		setFromJson(ele);
 	}
-	
-	
 	
 	public void setFromJson(JsonElement ele) {
 		if (ele.isJsonObject()) {
 			JsonObject obj = ele.getAsJsonObject();
 			
-			for(int index : JsonToolkit.ints(obj.get("sprite"))) {
-				sprite.add(subset.getImageFromIndex(index));
-			}
+			ids.addAll(JsonToolkit.ints(obj.get("sprite")));
 			
 			weight = obj.get("weight").getAsInt();
 		} else {
-			sprite.add(subset.getImageFromIndex(ele.getAsInt()));
+			ids.add(ele.getAsInt());
 		}
 	}
 

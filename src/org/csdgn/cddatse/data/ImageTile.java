@@ -32,18 +32,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class ImageTile {
-
-	private TileSubset subset;
-	
 	public Set<String> id;
 	public Set<SpriteSet> fg;
 	public Set<SpriteSet> bg;
 	public boolean rotates;
 	public Set<ImageTile> extra;
 
-	public ImageTile(TileSubset subset) {
-		this.subset = subset;
-		
+	public ImageTile() {
 		id = new LinkedHashSet<String>();
 		fg = new LinkedHashSet<SpriteSet>();
 		bg = new LinkedHashSet<SpriteSet>();
@@ -55,10 +50,10 @@ public class ImageTile {
 		List<SpriteSet> out = new ArrayList<SpriteSet>();
 		if (ele.isJsonArray()) {
 			ele.getAsJsonArray().forEach((value) -> {
-				out.add(new SpriteSet(subset, value));
+				out.add(new SpriteSet(value));
 			});
 		} else {
-			out.add(new SpriteSet(subset, ele));
+			out.add(new SpriteSet(ele));
 		}
 		return out;
 	}
@@ -91,7 +86,7 @@ public class ImageTile {
 		if (obj.has("additional_tiles")) {
 			JsonArray array = obj.get("additional_tiles").getAsJsonArray();
 			array.forEach((ele) -> {
-				ImageTile tile = new ImageTile(subset);
+				ImageTile tile = new ImageTile();
 				tile.read(ele.getAsJsonObject());
 				extra.add(tile);
 			});

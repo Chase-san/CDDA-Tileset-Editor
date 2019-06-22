@@ -22,6 +22,7 @@
  */
 package org.csdgn.cddatse.data;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,9 +50,9 @@ public class Tileset extends TilesetStub {
 	public Tileset() {
 		subsets = new LinkedHashMap<String, TileSubset>();
 	}
-	
+
 	public void close() {
-		for(TileSubset subset : subsets.values()) {
+		for (TileSubset subset : subsets.values()) {
 			subset.close();
 		}
 	}
@@ -165,4 +166,16 @@ public class Tileset extends TilesetStub {
 		return false;
 	}
 
+	public BufferedImage getSpriteForId(int id) {
+		// find the correct subset
+		int index = 0;
+		for (TileSubset sub : subsets.values()) {
+			int size = sub.sprites.size();
+			if (id < index + size) {
+				return sub.getImageFromIndex(id - index);
+			}
+			index += size;
+		}
+		return null;
+	}
 }

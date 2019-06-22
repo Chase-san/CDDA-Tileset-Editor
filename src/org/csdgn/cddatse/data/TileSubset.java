@@ -57,7 +57,7 @@ public class TileSubset {
 		loadImage();
 
 		obj.get("tiles").getAsJsonArray().forEach((a) -> {
-			ImageTile tile = new ImageTile(this);
+			ImageTile tile = new ImageTile();
 			tile.read(a.getAsJsonObject());
 			tiles.add(tile);
 		});
@@ -162,6 +162,7 @@ public class TileSubset {
 	protected BufferedImage getImageFromIndex(int index) {
 		if (index >= sprites.size()) {
 			// TODO some fallback
+			System.out.println("Cannot find image at index " + index + ".");
 			return null;
 		}
 		return sprites.get(index);
