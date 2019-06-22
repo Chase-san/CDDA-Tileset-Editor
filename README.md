@@ -12,6 +12,7 @@ Warning: The source is a complete mess. Completely hacked together.
 4. Make any edits.
 5. Save your changes with `File > Save`.
 
+
 ## How to Build
 
 ### Linux
@@ -21,6 +22,26 @@ Warning: The source is a complete mess. Completely hacked together.
 4. Run `ant`
 
 The built editor should be in the `dispatch` folder.
+
+
+## Current goals
+
+For version 1.0.
+* Ability to add or remove preexisting sprites from tiles (fg and bg).
+* Ability to add or remove and alter weights on sprites inside tiles that use them.
+* Ability to add or remove new tile definitions.
+
+For version 1.1.
+* Ability to open tilesets not inside the cdda files.
+* Ability to save tilesets as a new tileset (Save As).
+* Editing sprite sheet definitions (width, height, offset)
+* Multitile editing. 
+
+For version 1.2.
+* Create new tilesets.
+* Add or remove sprite sheet definitions.
+* Fallback sprite handling.
+
 
 ## Licensing
 
