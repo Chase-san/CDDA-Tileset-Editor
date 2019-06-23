@@ -42,9 +42,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.text.PlainDocument;
 
 import org.csdgn.cddatse.data.ImageTile;
 import org.csdgn.cddatse.data.SpriteSet;
+import org.csdgn.maru.swing.IntegerDocumentFilter;
 
 public class ImageTilePanel extends JPanel {
 	private static final long serialVersionUID = 6328834555090823394L;
@@ -224,7 +226,24 @@ public class ImageTilePanel extends JPanel {
 				weight = set.weight;
 			}
 			JTextField txtWeight = new JTextField(String.valueOf(weight));
-			txtWeight.setEnabled(false);
+			txtWeight.setFont(AppToolkit.getBestMonospaceFont(txtWeight.getFont().getSize2D()));
+			txtWeight.setColumns(3);
+			PlainDocument docWeight = (PlainDocument) txtWeight.getDocument();
+			docWeight.setDocumentFilter(new IntegerDocumentFilter(true));
+			txtWeight.addCaretListener(e -> {
+				//remove anything non-numeric
+				int newWeight = -1;
+				try {
+					newWeight = Integer.parseInt(txtWeight.getText());
+				} catch(Exception ex) {
+					
+				}
+				if(newWeight < -1) {
+					newWeight = -1;
+				}
+				
+				set.weight = newWeight;
+			});
 			spritePanel.add(new JLabel("Weight "));
 			spritePanel.add(txtWeight);
 
