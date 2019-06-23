@@ -23,15 +23,20 @@
 package org.csdgn.cddatse;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -44,7 +49,21 @@ import org.csdgn.cddatse.data.SpriteSet;
 public class ImageTilePanel extends JPanel {
 	private static final long serialVersionUID = 6328834555090823394L;
 
+	private static String sanitize(String list) {
+		StringBuilder buf = new StringBuilder();
+		boolean first = true;
+		for (String str : list.split("[ \t\n\r]+")) {
+			if (!first) {
+				buf.append("\n");
+			}
+			first = false;
+			buf.append(str);
+		}
+		return buf.toString();
+	}
+
 	private MainPanel main;
+
 	private ImageTile tile;
 
 	public ImageTilePanel(MainPanel main, ImageTile tile) {
@@ -57,68 +76,6 @@ public class ImageTilePanel extends JPanel {
 		// get all the name things
 		add(createIdPanel(), BorderLayout.NORTH);
 		add(createImagePanel(), BorderLayout.CENTER);
-	}
-
-	private JPanel createImagePanel() {
-		// Temporary!
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-		// find out if we need the weighted layout
-		boolean weighted = false;
-		for (SpriteSet set : tile.fg) {
-			if (set.weight != null) {
-				weighted = true;
-				break;
-			}
-		}
-		JCheckBox cboxWeighted = new JCheckBox("Use weighted layout?");
-		cboxWeighted.setSelected(weighted);
-		cboxWeighted.setEnabled(false);
-		panel.add(cboxWeighted);
-
-		if (weighted) {
-			for (SpriteSet set : tile.fg) {
-				JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-				spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
-				int weight = 0;
-				if(set.weight != null) {
-					weight = set.weight;
-				}
-				JTextField txtWeight = new JTextField(String.valueOf(weight));
-				txtWeight.setEnabled(false);
-				spritePanel.add(new JLabel("Weight "));
-				spritePanel.add(txtWeight);
-				
-				for (int id : set.ids) {
-					spritePanel.add(createImageButton(id));
-				}
-
-				panel.add(spritePanel);
-			}
-		} else {
-			JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-			spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
-			for (SpriteSet set : tile.fg) {
-				for (int id : set.ids) {
-					spritePanel.add(createImageButton(id));
-				}
-			}
-			panel.add(spritePanel);
-		}
-
-		return panel;
-	}
-
-	private JButton createImageButton(int id) {
-		BufferedImage sprite = main.tileset.getSpriteForId(id);
-		JButton btn = new JButton();
-		if (sprite != null) {
-			btn.setIcon(new ImageIcon(sprite));
-		} else {
-			btn.setText("" + id);
-		}
-		return btn;
 	}
 
 	private JPanel createIdPanel() {
@@ -152,16 +109,118 @@ public class ImageTilePanel extends JPanel {
 		return panel;
 	}
 
-	private static String sanitize(String list) {
-		StringBuilder buf = new StringBuilder();
-		boolean first = true;
-		for (String str : list.split("[ \t\n\r]+")) {
-			if (!first) {
-				buf.append("\n");
+	private JComponent createSpriteComponent(int id) {
+		BufferedImage sprite = main.tileset.getSpriteForId(id);
+		JLayeredPane pane = new JLayeredPane();
+		
+
+		JButton btnImage = new JButton(new ImageIcon(sprite));
+		JButton btnDelete = new JButton();
+		btnDelete.setIcon(new ImageIcon(AppToolkit.getImageResource("close.png")));
+		btnDelete.setRolloverIcon(new ImageIcon(AppToolkit.getImageResource("close_hover.png")));
+		btnDelete.setPressedIcon(new ImageIcon(AppToolkit.getImageResource("close_press.png")));
+		btnDelete.setBorderPainted(false); 
+		btnDelete.setContentAreaFilled(false); 
+        btnDelete.setFocusPainted(false); 
+        btnDelete.setOpaque(false);
+
+		Dimension btnImageSize = btnImage.getPreferredSize();
+		Dimension btnDeleteSize = new Dimension(12, 12);
+
+		Dimension paneSize = new Dimension(btnImageSize.width + btnDeleteSize.width / 3,
+				btnImageSize.height + btnDeleteSize.height / 3);
+		pane.setPreferredSize(paneSize);
+
+		pane.add(btnImage, 0, 0);
+		btnImage.setBounds(0, paneSize.height - btnImageSize.height, btnImageSize.width, btnImageSize.height);
+
+		pane.add(btnDelete, 0, 0);
+		btnDelete.setBounds(paneSize.width - btnDeleteSize.width, 0,
+				btnDeleteSize.width, btnDeleteSize.height);
+
+		return pane;
+	}
+
+	private JPanel createImagePanel() {
+		// Temporary!
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		// find out if we need the weighted layout
+		boolean weighted = false;
+		for (SpriteSet set : tile.fg) {
+			if (set.weight != null) {
+				weighted = true;
+				break;
 			}
-			first = false;
-			buf.append(str);
 		}
-		return buf.toString();
+		JCheckBox cboxWeighted = new JCheckBox("Use weighted layout?");
+		cboxWeighted.setSelected(weighted);
+		cboxWeighted.setEnabled(false);
+		panel.add(cboxWeighted);
+
+		if (weighted) {
+			generateWeightedPanels(panel);
+		} else {
+			generateUnweightedPanels(panel);
+		}
+
+		return panel;
+	}
+
+	private void generateUnweightedComponents(JPanel panel, Set<SpriteSet> comp) {
+		for (SpriteSet set : tile.fg) {
+			for (int id : set.ids) {
+				panel.add(createSpriteComponent(id));
+			}
+		}
+	}
+
+	private void generateUnweightedPanels(JPanel panel) {
+		JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+		spritePanel.setBorder(BorderFactory.createTitledBorder("Foreground Sprites"));
+		generateUnweightedComponents(spritePanel, tile.fg);
+		panel.add(spritePanel);
+
+		spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+		spritePanel.setBorder(BorderFactory.createTitledBorder("Background Sprites"));
+		generateUnweightedComponents(spritePanel, tile.bg);
+		panel.add(spritePanel);
+	}
+
+	private void generateWeightedComponents(JPanel panel, Set<SpriteSet> comp) {
+		for (SpriteSet set : comp) {
+			JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+			spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
+			int weight = 0;
+			if (set.weight != null) {
+				weight = set.weight;
+			}
+			JTextField txtWeight = new JTextField(String.valueOf(weight));
+			txtWeight.setEnabled(false);
+			spritePanel.add(new JLabel("Weight "));
+			spritePanel.add(txtWeight);
+
+			for (int id : set.ids) {
+				spritePanel.add(createSpriteComponent(id));
+			}
+
+			panel.add(spritePanel);
+		}
+	}
+
+	private void generateWeightedPanels(JPanel panel) {
+		JPanel innerPanel = new JPanel();
+		innerPanel.setBorder(BorderFactory.createTitledBorder("Foreground"));
+
+		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+		generateWeightedComponents(innerPanel, tile.fg);
+		panel.add(innerPanel);
+
+		innerPanel = new JPanel();
+		innerPanel.setBorder(BorderFactory.createTitledBorder("Background"));
+		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+		generateWeightedComponents(innerPanel, tile.bg);
+		panel.add(innerPanel);
 	}
 }

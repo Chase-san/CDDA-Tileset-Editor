@@ -32,6 +32,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -99,19 +102,40 @@ public class AppToolkit {
 
 		icons = new ArrayList<Image>();
 
-		for (int val : new int[] { 16, 32, 48 }) {
+		for (int val : new int[] { 16, 24, 32, 48, 64, 256, 512 }) {
 			String iconString = String.format("icon%d.png", val);
 
-			InputStream stream = getLocalResource(iconString);
-			if (stream != null)
-				try {
-					icons.add(ImageIO.read(stream));
-				} catch (IOException e) {
-					// If we fail, just show the default java icon
-				}
+			Image img = getImageResource(iconString);
+			if (img != null) {
+				icons.add(img);
+			}
 		}
 
 		return icons;
+	}
+
+	private static Map<String, BufferedImage> imageResources;
+
+	public static BufferedImage getImageResource(String resource) {
+		if (imageResources == null) {
+			imageResources = new HashMap<String, BufferedImage>();
+		}
+		if (imageResources.containsKey(resource)) {
+			return imageResources.get(resource);
+		}
+		InputStream stream = getLocalResource(resource);
+		if (stream != null) {
+			try {
+				BufferedImage image = ImageIO.read(stream);
+				if (image != null) {
+					imageResources.put(resource, image);
+					return image;
+				}
+			} catch (IOException e) {
+				// do nothing if we fail (ergo we will return null)
+			}
+		}
+		return null;
 	}
 
 	public static InputStream getLocalResource(String resource) {

@@ -45,6 +45,7 @@ For version 1.2.
 
 ## Licensing
 
-The code and the icon have different licenses, see ICONLICENSE.
+The code and the images have different licenses, see IMAGE_LICENSE.
 
-In short, you can do just about anything you want with the code, but the icon is mine.
+The short of it is, the program itself and its code is free and open, but the images belong to me.
+This includs the icon, buttons and anything else represented as a raster image.
