@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2014-2019 Robert Maupin
+ * Copyright (c) 2019 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,47 +20,58 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.csdgn.cddatse.data;
+package org.csdgn.maru.swing;
 
-import org.csdgn.maru.util.ArraySet;
+import java.util.ArrayList;
+import javax.swing.AbstractListModel;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+public class ArrayListModel<E> extends AbstractListModel<E> {
+	private static final long serialVersionUID = 5698969358046633170L;
 
-public class SpriteSet {
-	public ArraySet<Integer> ids;
-	public Integer weight;
+	private final ArrayList<E> list;
 
-	public SpriteSet() {
-		ids = new ArraySet<Integer>();
-		weight = null;
+	public ArrayListModel() {
+		list = new ArrayList<E>();
 	}
 
-	public SpriteSet(JsonElement ele) {
-		ids = new ArraySet<Integer>();
-		weight = null;
-		setFromJson(ele);
-	}
-	
-	public void setFromJson(JsonElement ele) {
-		if (ele.isJsonObject()) {
-			JsonObject obj = ele.getAsJsonObject();
-			
-			ids.addAll(JsonToolkit.ints(obj.get("sprite")));
-			
-			weight = obj.get("weight").getAsInt();
-		} else {
-			ids.add(ele.getAsInt());
-		}
+	public ArrayListModel(ArrayList<E> wrap) {
+		list = wrap;
 	}
 
-	public JsonElement getJson() {
-		if (weight == null || weight < 0) {
-			return JsonToolkit.ints(ids);
-		}
-		JsonObject obj = new JsonObject();
-		obj.add("sprite", JsonToolkit.ints(ids));
-		obj.addProperty("weight", weight);
-		return obj;
+	public ArrayList<E> getList() {
+		return list;
+	}
+
+	public void add(E element) {
+		int index = list.size();
+		list.add(element);
+		fireIntervalAdded(this, index, index);
+	}
+
+	public void remove(int index) {
+		list.remove(index);
+		fireIntervalRemoved(this, index, index);
+	}
+
+	public void remove(E e) {
+		remove(list.indexOf(e));
+	}
+
+	public E get(int index) {
+		return list.get(index);
+	}
+
+	@Override
+	public int getSize() {
+		return list.size();
+	}
+
+	@Override
+	public E getElementAt(int index) {
+		return list.get(index);
+	}
+
+	public void fireUpdate() {
+		fireContentsChanged(this, 0, getSize());
 	}
 }

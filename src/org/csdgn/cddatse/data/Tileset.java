@@ -57,8 +57,59 @@ public class Tileset extends TilesetStub {
 		}
 	}
 
+	public int getGlobalIdForLocalId(String sheet, int id) {
+		int index = 0;
+		for (String name : subsets.keySet()) {
+			TileSubset sub = subsets.get(name);
+			int size = sub.sprites.size();
+			if (name.equalsIgnoreCase(sheet)) {
+				return index + id;
+			}
+			index += size;
+		}
+		return -1;
+	}
+
+	public int getLocalIdForGlobalId(int id) {
+		int index = 0;
+		for (TileSubset sub : subsets.values()) {
+			int size = sub.sprites.size();
+			if (id < index + size) {
+				return id - index;
+			}
+			index += size;
+		}
+		return -1;
+	}
+
+	public String getSheetNameForGlobalId(int id) {
+		int index = 0;
+		for (String name : subsets.keySet()) {
+			TileSubset sub = subsets.get(name);
+			int size = sub.sprites.size();
+			if (id < index + size) {
+				return name;
+			}
+			index += size;
+		}
+		return "";
+	}
+
 	public Set<String> getSheetNames() {
 		return subsets.keySet();
+	}
+
+	public BufferedImage getSpriteForId(int id) {
+		// find the correct subset
+		int index = 0;
+		for (TileSubset sub : subsets.values()) {
+			int size = sub.sprites.size();
+			if (id < index + size) {
+				return sub.getImageFromIndex(id - index);
+			}
+			index += size;
+		}
+		return null;
 	}
 
 	public void load(TilesetStub stub) {
@@ -164,18 +215,5 @@ public class Tileset extends TilesetStub {
 			e.printStackTrace();
 		}
 		return false;
-	}
-
-	public BufferedImage getSpriteForId(int id) {
-		// find the correct subset
-		int index = 0;
-		for (TileSubset sub : subsets.values()) {
-			int size = sub.sprites.size();
-			if (id < index + size) {
-				return sub.getImageFromIndex(id - index);
-			}
-			index += size;
-		}
-		return null;
 	}
 }

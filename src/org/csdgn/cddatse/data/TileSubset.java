@@ -21,7 +21,7 @@ public class TileSubset {
 	 * TODO "transparency": { "R": 0, "G": 0, "B": 0 },
 	 */
 
-	public List<BufferedImage> sprites;
+	public ArrayList<BufferedImage> sprites;
 	public List<FallbackTile> fallback;
 	public List<ImageTile> tiles;
 	private BufferedImage image;
