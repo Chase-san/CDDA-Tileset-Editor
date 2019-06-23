@@ -56,11 +56,11 @@ public class SpriteSet {
 	}
 
 	public JsonElement getJson() {
-		if (weight == null) {
-			//return JsonToolkit.ints(sprite);
+		if (weight == null || weight < 0) {
+			return JsonToolkit.ints(ids);
 		}
 		JsonObject obj = new JsonObject();
-		//obj.add("sprite", JsonToolkit.ints(sprite));
+		obj.add("sprite", JsonToolkit.ints(ids));
 		obj.addProperty("weight", weight);
 		return obj;
 	}

@@ -23,9 +23,9 @@
 package org.csdgn.cddatse;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Set;
 
@@ -48,6 +48,12 @@ import org.csdgn.cddatse.data.SpriteSet;
 
 public class ImageTilePanel extends JPanel {
 	private static final long serialVersionUID = 6328834555090823394L;
+	
+	private class SpriteComponentData {
+		JComponent comp;
+		JButton image;
+		JButton delete;
+	}
 
 	private static String sanitize(String list) {
 		StringBuilder buf = new StringBuilder();
@@ -75,7 +81,7 @@ public class ImageTilePanel extends JPanel {
 
 		// get all the name things
 		add(createIdPanel(), BorderLayout.NORTH);
-		add(createImagePanel(), BorderLayout.CENTER);
+		add(createSpritePanels(), BorderLayout.CENTER);
 	}
 
 	private JPanel createIdPanel() {
@@ -109,12 +115,14 @@ public class ImageTilePanel extends JPanel {
 		return panel;
 	}
 
-	private JComponent createSpriteComponent(int id) {
+	private SpriteComponentData createSpriteComponent(int id) {
 		BufferedImage sprite = main.tileset.getSpriteForId(id);
 		JLayeredPane pane = new JLayeredPane();
 		
 
 		JButton btnImage = new JButton(new ImageIcon(sprite));
+		//btnImage.addActionListener(press);
+		
 		JButton btnDelete = new JButton();
 		btnDelete.setIcon(new ImageIcon(AppToolkit.getImageResource("close.png")));
 		btnDelete.setRolloverIcon(new ImageIcon(AppToolkit.getImageResource("close_hover.png")));
@@ -123,6 +131,8 @@ public class ImageTilePanel extends JPanel {
 		btnDelete.setContentAreaFilled(false); 
         btnDelete.setFocusPainted(false); 
         btnDelete.setOpaque(false);
+        
+        //btnDelete.addActionListener(delete);
 
 		Dimension btnImageSize = btnImage.getPreferredSize();
 		Dimension btnDeleteSize = new Dimension(12, 12);
@@ -137,11 +147,16 @@ public class ImageTilePanel extends JPanel {
 		pane.add(btnDelete, 0, 0);
 		btnDelete.setBounds(paneSize.width - btnDeleteSize.width, 0,
 				btnDeleteSize.width, btnDeleteSize.height);
+		
+		SpriteComponentData data = new SpriteComponentData();
+		data.comp = pane;
+		data.image = btnImage;
+		data.delete = btnDelete;
 
-		return pane;
+		return data;
 	}
 
-	private JPanel createImagePanel() {
+	private JPanel createSpritePanels() {
 		// Temporary!
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -169,9 +184,21 @@ public class ImageTilePanel extends JPanel {
 	}
 
 	private void generateUnweightedComponents(JPanel panel, Set<SpriteSet> comp) {
-		for (SpriteSet set : tile.fg) {
+		for (SpriteSet set : comp) {
 			for (int id : set.ids) {
-				panel.add(createSpriteComponent(id));
+				SpriteComponentData data = createSpriteComponent(id);
+				panel.add(data.comp);
+				data.delete.addActionListener(e -> {
+					panel.remove(data.comp);
+					panel.invalidate();
+					panel.revalidate();
+					
+					set.ids.remove(id);
+					
+					if(set.ids.size() == 0) {
+						comp.remove(set);
+					}
+				});
 			}
 		}
 	}
@@ -192,7 +219,7 @@ public class ImageTilePanel extends JPanel {
 		for (SpriteSet set : comp) {
 			JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
 			spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
-			int weight = 0;
+			int weight = -1;
 			if (set.weight != null) {
 				weight = set.weight;
 			}
@@ -202,7 +229,20 @@ public class ImageTilePanel extends JPanel {
 			spritePanel.add(txtWeight);
 
 			for (int id : set.ids) {
-				spritePanel.add(createSpriteComponent(id));
+				SpriteComponentData data = createSpriteComponent(id);
+				spritePanel.add(data.comp);
+				data.delete.addActionListener(e -> {
+					spritePanel.remove(data.comp);
+					spritePanel.invalidate();
+					spritePanel.revalidate();
+					
+					set.ids.remove(id);
+					
+					if(set.ids.size() == 0) {
+						comp.remove(set);
+						panel.remove(spritePanel);
+					}
+				});
 			}
 
 			panel.add(spritePanel);
