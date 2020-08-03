@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2014-2019 Robert Maupin
+ * Copyright (c) 2014-2020 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -54,9 +54,13 @@ public class AppToolkit {
 		if (directory != null) {
 			return directory;
 		}
-
+		
 		// Determine our base directory
 		String codePath = AppToolkit.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		//fix for POS vscode debugger
+		if(codePath.contains("AppData/Roaming/Code")) {
+			codePath = new File(".").getAbsolutePath();
+		}
 		File codeFile = new File(codePath);
 		if (codeFile.exists() && codePath != null) {
 			// So we have a predictable format
@@ -151,8 +155,9 @@ public class AppToolkit {
 
 		// fall back to in jar
 		InputStream stream = ClassLoader.getSystemResourceAsStream(resource);
-		if (stream != null)
+		if (stream != null) {
 			return stream;
+		}
 
 		// if that fails, try development location
 		try {

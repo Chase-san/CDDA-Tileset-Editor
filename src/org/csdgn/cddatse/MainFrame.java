@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2014-2019 Robert Maupin
+ * Copyright (c) 2014-2020 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,6 +22,7 @@
  */
 package org.csdgn.cddatse;
 
+import java.awt.EventQueue;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -42,8 +43,9 @@ import org.csdgn.cddatse.data.TilesetStub;
 public class MainFrame extends JFrame {
 	private static final long serialVersionUID = 2077970214609358246L;
 
+	private JMenu openMenu;
+	private int openMenuItemCount;
 	private List<JComponent> disabledControls;
-	private Options options;
 	private Tileset tileset;
 
 	public MainFrame() {
@@ -56,11 +58,26 @@ public class MainFrame extends JFrame {
 		disabledControls = new ArrayList<JComponent>();
 
 		tileset = null;
-		options = new Options();
-		options.load();
+		
+		if(!Options.INSTANCE.load()) {
+			//popup the set options box, so the game directory can be set
+			EventQueue.invokeLater(() -> {
+				showOptionsDialog();
+			});
+		}
 
 		setJMenuBar(createMenuBar());
+	}
 
+	private void showOptionsDialog() {
+		String oldPath = Options.INSTANCE.getGamePathString();
+		OptionsDialog dialog = new OptionsDialog(this);
+		dialog.setVisible(true);
+
+		//refresh open menu file list if the game path has changed
+		if(Options.INSTANCE.hasChanged() && !oldPath.equals(Options.INSTANCE.getGamePathString())) {
+			refreshOpenMenuFileList();
+		}
 	}
 
 	private JMenu createFileMenu() {
@@ -80,7 +97,7 @@ public class MainFrame extends JFrame {
 
 		item = new JMenuItem("Save");
 		item.setMnemonic(KeyEvent.VK_S);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
 		item.setEnabled(false);
 		item.addActionListener(e -> {
 			save();
@@ -90,7 +107,7 @@ public class MainFrame extends JFrame {
 
 		item = new JMenuItem("Save As");
 		item.setMnemonic(KeyEvent.VK_A);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		item.setEnabled(false);
 		//disabledControls.add(item);
 		menu.add(item);
@@ -99,7 +116,7 @@ public class MainFrame extends JFrame {
 
 		item = new JMenuItem("Close");
 		item.setMnemonic(KeyEvent.VK_C);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_MASK));
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK));
 		item.addActionListener(e -> {
 			closeFile();
 		});
@@ -112,8 +129,7 @@ public class MainFrame extends JFrame {
 		item = new JMenuItem("Options");
 		item.setMnemonic(KeyEvent.VK_P);
 		item.addActionListener((e) -> {
-			OptionsDialog dialog = new OptionsDialog(this, options);
-			dialog.setVisible(true);
+			showOptionsDialog();
 		});
 		menu.add(item);
 
@@ -121,7 +137,7 @@ public class MainFrame extends JFrame {
 
 		item = new JMenuItem("Exit");
 		item.setMnemonic(KeyEvent.VK_X);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK));
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_DOWN_MASK));
 		item.addActionListener((e) -> {
 			dispose();
 		});
@@ -146,32 +162,34 @@ public class MainFrame extends JFrame {
 
 		item = new JMenuItem("Open File");
 		item.setMnemonic(KeyEvent.VK_O);
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 		item.setEnabled(false);
 		menu.add(item);
 
 		item = new JMenuItem("Refresh List");
 		item.setMnemonic(KeyEvent.VK_R);
+		item.addActionListener(e -> {
+			refreshOpenMenuFileList();
+		});
 		menu.add(item);
 
 		menu.addSeparator();
 
-		int count = menu.getMenuComponentCount();
+		openMenu = menu;
+		openMenuItemCount = menu.getMenuComponentCount();
 
-		if (options.gamePath != null) {
-			loadStubs(menu, new File(options.gamePath, "gfx"));
-		}
-
-		item.addActionListener(e -> {
-			while (menu.getMenuComponentCount() > count) {
-				menu.remove(count);
-			}
-			if (options.gamePath != null) {
-				loadStubs(menu, new File(options.gamePath, "gfx"));
-			}
-		});
+		refreshOpenMenuFileList();		
 
 		return menu;
+	}
+
+	public void refreshOpenMenuFileList() {
+		while (openMenu.getMenuComponentCount() > openMenuItemCount) {
+			openMenu.remove(openMenuItemCount);
+		}
+		if (Options.INSTANCE.gamePath != null) {
+			loadStubs(openMenu, new File(Options.INSTANCE.gamePath, "gfx"));
+		}
 	}
 
 	public void dispose() {
@@ -179,7 +197,7 @@ public class MainFrame extends JFrame {
 			//TODO ask to save
 			closeFile();
 		}
-		options.save();
+		Options.INSTANCE.save();
 		super.dispose();
 	}
 

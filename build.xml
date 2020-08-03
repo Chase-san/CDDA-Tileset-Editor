@@ -96,7 +96,7 @@
 
 		<!-- Copy readme/license -->
 		<copy file="LICENSE" todir="${release.dir}" />
-		<copy file="ICONLICENSE" todir="${release.dir}" />
+		<copy file="IMAGE_LICENSE" todir="${release.dir}" />
 		<copy file="README.md" todir="${release.dir}" />
 
 		<!-- Delete the manifest, we already made use of it -->

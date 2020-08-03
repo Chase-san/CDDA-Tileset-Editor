@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2014-2020 Robert Maupin
+ * Copyright (c) 2020 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -20,48 +20,34 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.csdgn.cddatse.data;
+package org.csdgn.maru.swing;
 
-import com.google.gson.JsonObject;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-public class SheetData {
-	public int width;
-	public int height;
-	public int offsetX;
-	public int offsetY;
+public class DocumentChangeListener implements DocumentListener {
+    public static interface DocumentStateListener {
+        public void stateChanged(DocumentEvent e);
+    }
 
-	public SheetData() {
-		width = 1;
-		height = 1;
-		offsetX = 0;
-		offsetY = 0;
-	}
+    private DocumentStateListener dsl;
+    public DocumentChangeListener(DocumentStateListener l) {
+        dsl = l;
+    }
 
-	public boolean read(JsonObject obj) {
-		boolean hasData = false;
-		if (obj.has("sprite_width")) {
-			width = obj.get("sprite_width").getAsInt();
-			hasData = true;
-		}
-		if (obj.has("sprite_height")) {
-			height = obj.get("sprite_height").getAsInt();
-			hasData = true;
-		}
-		if (obj.has("sprite_offset_x")) {
-			offsetX = obj.get("sprite_offset_x").getAsInt();
-			hasData = true;
-		}
-		if (obj.has("sprite_offset_y")) {
-			offsetY = obj.get("sprite_offset_y").getAsInt();
-			hasData = true;
-		}
-		return hasData;
-	}
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        dsl.stateChanged(e);
+    }
 
-	public void write(JsonObject obj) {
-		obj.addProperty("sprite_width", width);
-		obj.addProperty("sprite_height", height);
-		obj.addProperty("sprite_offset_x", offsetX);
-		obj.addProperty("sprite_offset_y", offsetY);
-	}
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        dsl.stateChanged(e);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        dsl.stateChanged(e);
+    }
+    
 }

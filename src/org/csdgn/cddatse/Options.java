@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2014-2019 Robert Maupin
+ * Copyright (c) 2014-2020 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -38,22 +38,47 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
 
 public class Options {
+	public static final Options INSTANCE = new Options();
+
 	private static final String DefaultSettingsFile = "options";
 	private static final String KeyGamePath = "GAME_PATH";
 	private static final String KeyLastPath = "LAST_PATH";
+	private static final String KeyImageScale = "IMAGE_SCALE";
+	public static final int MAX_SCALE = 4;
+	public static final int MIN_SCALE = 1;
 
 	private JFileChooser fileChooser = null;
 	private JFileChooser folderChooser = null;
+
 	public File gamePath;
-
 	public File lastPath;
-
 	public File myPath;
+
+	public int imageScale;
+	public boolean changed;
 
 	public Options() {
 		myPath = AppToolkit.getLocalDirectory();
+		imageScale = 1;
 		lastPath = FileSystemView.getFileSystemView().getHomeDirectory();
 		gamePath = null;
+		markUnchanged();
+	}
+
+	public void markChanged() {
+		changed = true;
+	}
+
+	public void markUnchanged() {
+		changed = false;
+	}
+
+	public boolean hasChanged() {
+		return changed;
+	}
+
+	public int getImageScale() {
+		return Math.max(MIN_SCALE, Math.min(imageScale, MAX_SCALE));
 	}
 
 	public File browseForDirectory(Component parent, String title) {
@@ -117,6 +142,7 @@ public class Options {
 	public boolean load() {
 		return load(new File(myPath, DefaultSettingsFile));
 	}
+
 	public boolean load(File file) {
 		if (!file.exists()) {
 			return false;
@@ -124,13 +150,24 @@ public class Options {
 		Properties props = new Properties();
 		try (Reader r = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
 			props.load(r);
-			String path = props.getProperty(KeyGamePath);
-			if (path != null) {
-				gamePath = new File(path);
+			String value = props.getProperty(KeyGamePath);
+			if (value != null) {
+				gamePath = new File(value);
+				markChanged();
 			}
-			path = props.getProperty(KeyLastPath);
-			if (path != null) {
-				lastPath = new File(path);
+			value = props.getProperty(KeyLastPath);
+			if (value != null) {
+				lastPath = new File(value);
+				markChanged();
+			}
+			value = props.getProperty(KeyImageScale);
+			if (value != null) {
+				try {
+					imageScale = Integer.parseInt(value);
+					markChanged();
+				} catch (NumberFormatException ex) {
+					// fail silently
+				}
 			}
 
 			return true;
@@ -151,6 +188,7 @@ public class Options {
 		if (lastPath != null) {
 			props.setProperty(KeyLastPath, lastPath.getAbsolutePath());
 		}
+		props.setProperty(KeyImageScale, Integer.toString(imageScale));
 		if (props.size() <= 0) {
 			return false;
 		}

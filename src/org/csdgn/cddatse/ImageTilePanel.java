@@ -1,7 +1,7 @@
 /**
  * The MIT License (MIT)
  * 
- * Copyright (c) 2019 Robert Maupin
+ * Copyright (c) 2019-2020 Robert Maupin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,6 +25,7 @@ package org.csdgn.cddatse;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -122,7 +123,12 @@ public class ImageTilePanel extends JPanel {
 		BufferedImage sprite = main.tileset.getSpriteForId(id);
 		JLayeredPane pane = new JLayeredPane();
 
-		JButton btnImage = new JButton(new ImageIcon(sprite));
+		int scale = Options.INSTANCE.getImageScale();
+		
+		Image scaledSprite = sprite.getScaledInstance(sprite.getWidth() * scale, sprite.getHeight() * scale, Image.SCALE_SMOOTH);
+
+		JButton btnImage = new JButton(new ImageIcon(scaledSprite));
+		btnImage.setFocusPainted(false);
 		// btnImage.addActionListener(press);
 
 		JButton btnDelete = new JButton();
