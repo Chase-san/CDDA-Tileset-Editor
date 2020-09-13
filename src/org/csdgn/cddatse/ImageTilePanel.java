@@ -151,7 +151,7 @@ public class ImageTilePanel extends JPanel {
 		pane.add(btnImage, 0, 0);
 		btnImage.setBounds(0, paneSize.height - btnImageSize.height, btnImageSize.width, btnImageSize.height);
 
-		pane.add(btnDelete, 0, 0);
+		pane.add(btnDelete, 1, 0);
 		btnDelete.setBounds(paneSize.width - btnDeleteSize.width, 0, btnDeleteSize.width, btnDeleteSize.height);
 
 		SpriteComponentData data = new SpriteComponentData();
@@ -200,7 +200,7 @@ public class ImageTilePanel extends JPanel {
 					panel.invalidate();
 					panel.revalidate();
 
-					set.ids.remove(id);
+					set.ids.remove((Integer)id);
 
 					if (set.ids.size() == 0) {
 						comp.remove(set);
