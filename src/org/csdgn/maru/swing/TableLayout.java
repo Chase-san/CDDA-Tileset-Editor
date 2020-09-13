@@ -26,7 +26,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.LayoutManager2;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import java.util.HashMap;
  * @author Robert Maupin
  * @version 1.2
  */
-public class TableLayout implements LayoutManager, LayoutManager2 {
+public class TableLayout implements LayoutManager2 {
 	private class Cell extends TableLayoutConstraint {
 		public Component comp = null;
 
