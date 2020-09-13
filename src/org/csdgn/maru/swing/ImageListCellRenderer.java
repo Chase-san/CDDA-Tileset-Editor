@@ -25,6 +25,8 @@ package org.csdgn.maru.swing;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
+
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -45,10 +47,13 @@ public class ImageListCellRenderer extends JLabel implements ListCellRenderer<Im
 			boolean isSelected, boolean hasFocus) {
 		icon.setImage((Image) value);
 
-		if (hasFocus) {
-			setBackground(new Color(list.getSelectionBackground().getRGB() & 0xFFFFFF));
+		if (hasFocus || isSelected) {
+			Color bgColor = new Color(list.getSelectionBackground().getRGB() & 0xFFFFFF);
+			setBackground(bgColor);
+			setBorder(BorderFactory.createLineBorder(bgColor, 1));
 		} else {
 			setBackground(new Color(list.getBackground().getRGB() & 0xFFFFFF));
+			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		}
 		return this;
 	}

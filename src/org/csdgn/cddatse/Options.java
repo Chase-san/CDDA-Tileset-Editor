@@ -23,6 +23,7 @@
 package org.csdgn.cddatse;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,6 +35,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
 
@@ -79,6 +81,13 @@ public class Options {
 
 	public int getImageScale() {
 		return Math.max(MIN_SCALE, Math.min(imageScale, MAX_SCALE));
+	}
+
+	public ImageIcon getScaledIcon(Image unscaled) {
+		int scale = getImageScale();
+		Image scaled = unscaled.getScaledInstance(unscaled.getWidth(null) * scale, unscaled.getHeight(null) * scale, Image.SCALE_SMOOTH);
+
+		return new ImageIcon(scaled);
 	}
 
 	public File browseForDirectory(Component parent, String title) {

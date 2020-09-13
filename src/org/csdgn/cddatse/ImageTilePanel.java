@@ -74,6 +74,9 @@ public class ImageTilePanel extends JPanel {
 
 	private MainPanel main;
 	private ImageTile tile;
+	private JCheckBox cboxWeighted;
+	private JPanel spritePanel;
+	private JPanel bodyPanel;
 
 	public ImageTilePanel(MainPanel main, ImageTile tile) {
 		this.tile = tile;
@@ -84,7 +87,7 @@ public class ImageTilePanel extends JPanel {
 
 		// get all the name things
 		add(createIdPanel(), BorderLayout.NORTH);
-		add(createSpritePanels(), BorderLayout.CENTER);
+		add(bodyPanel = createBodyPanel(), BorderLayout.CENTER);
 	}
 
 	private JPanel createIdPanel() {
@@ -122,11 +125,7 @@ public class ImageTilePanel extends JPanel {
 		BufferedImage sprite = main.tileset.getSpriteForId(id);
 		JLayeredPane pane = new JLayeredPane();
 
-		int scale = Options.INSTANCE.getImageScale();
-		
-		Image scaledSprite = sprite.getScaledInstance(sprite.getWidth() * scale, sprite.getHeight() * scale, Image.SCALE_SMOOTH);
-
-		JButton btnImage = new JButton(new ImageIcon(scaledSprite));
+		JButton btnImage = new JButton(Options.INSTANCE.getScaledIcon(sprite));
 		btnImage.setFocusPainted(false);
 		// btnImage.addActionListener(press);
 
@@ -162,30 +161,51 @@ public class ImageTilePanel extends JPanel {
 		return data;
 	}
 
-	private JPanel createSpritePanels() {
-		// Temporary!
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-		// find out if we need the weighted layout
-		boolean weighted = false;
+	private boolean isWeighted() {
 		for (SpriteSet set : tile.fg) {
 			if (set.weight != null) {
-				weighted = true;
-				break;
+				return true;
 			}
 		}
-		JCheckBox cboxWeighted = new JCheckBox("Use weighted layout?");
+		for (SpriteSet set : tile.bg) {
+			if (set.weight != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private JPanel createBodyPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+
+		boolean weighted = isWeighted();
+		cboxWeighted = new JCheckBox("Use weighted layout?");
 		cboxWeighted.setSelected(weighted);
 		cboxWeighted.setEnabled(false);
-		panel.add(cboxWeighted);
+		panel.add(cboxWeighted, BorderLayout.NORTH);
+		spritePanel = createSpritePanel(weighted);
+		panel.add(spritePanel, BorderLayout.CENTER);
 
+		return panel;
+	}
+
+	private void refreshSpritePanels() {
+		JPanel nSpritePanels = createSpritePanel(cboxWeighted.isSelected());
+		bodyPanel.setVisible(false);
+		bodyPanel.remove(spritePanel);
+		spritePanel = nSpritePanels;
+		bodyPanel.add(spritePanel, BorderLayout.CENTER);
+		bodyPanel.setVisible(true);
+	}
+
+	private JPanel createSpritePanel(boolean weighted) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		if (weighted) {
 			generateWeightedPanels(panel);
 		} else {
 			generateUnweightedPanels(panel);
 		}
-
 		return panel;
 	}
 
@@ -209,21 +229,11 @@ public class ImageTilePanel extends JPanel {
 				// Create image select action
 				data.image.addActionListener(e -> {
 					Window win = SwingUtilities.getWindowAncestor(this);
-					SpriteDialog diag = new SpriteDialog(win, main, id);
-					diag.setVisible(true);
-					
-					
-					int imgId = diag.getSpriteId();
-					if (imgId >= 0) {
-						try {
-							int index = set.ids.indexOf(id);
-							set.ids.set(index, imgId);
-							BufferedImage buf = main.tileset.getSpriteForId(imgId);
-							data.image.setIcon(new ImageIcon(buf));
-						} catch (Exception ex) {
-
-						}
-
+					int nId = SpriteDialog.selectSprite(win, main, id);
+					if (nId >= 0 && !set.ids.contains(nId)) {
+						int index = set.ids.indexOf(id);
+						set.ids.set(index, nId);
+						refreshSpritePanels();
 					}
 				});
 			}
@@ -245,7 +255,7 @@ public class ImageTilePanel extends JPanel {
 	private void generateWeightedComponents(JPanel panel, Set<SpriteSet> comp) {
 		for (SpriteSet set : comp) {
 			JPanel spritePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-			spritePanel.setBorder(BorderFactory.createTitledBorder("Sprites"));
+			spritePanel.setBorder(BorderFactory.createTitledBorder("Weighted Sprite Set"));
 			int weight = -1;
 			if (set.weight != null) {
 				weight = set.weight;
@@ -288,7 +298,16 @@ public class ImageTilePanel extends JPanel {
 						panel.remove(spritePanel);
 					}
 				});
-				// TODO create image select action
+				// Create image select action
+				data.image.addActionListener(e -> {
+					Window win = SwingUtilities.getWindowAncestor(this);
+					int nId = SpriteDialog.selectSprite(win, main, id);
+					if (nId >= 0 && !set.ids.contains(nId)) {
+						int index = set.ids.indexOf(id);
+						set.ids.set(index, nId);
+						refreshSpritePanels();
+					}
+				});
 			}
 
 			panel.add(spritePanel);
@@ -296,17 +315,16 @@ public class ImageTilePanel extends JPanel {
 	}
 
 	private void generateWeightedPanels(JPanel panel) {
-		JPanel innerPanel = new JPanel();
-		innerPanel.setBorder(BorderFactory.createTitledBorder("Foreground"));
+		JPanel spritePanel = new JPanel();
+		spritePanel.setBorder(BorderFactory.createTitledBorder("Foreground"));
+		spritePanel.setLayout(new BoxLayout(spritePanel, BoxLayout.Y_AXIS));
+		generateWeightedComponents(spritePanel, tile.fg);
+		panel.add(spritePanel);
 
-		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-		generateWeightedComponents(innerPanel, tile.fg);
-		panel.add(innerPanel);
-
-		innerPanel = new JPanel();
-		innerPanel.setBorder(BorderFactory.createTitledBorder("Background"));
-		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
-		generateWeightedComponents(innerPanel, tile.bg);
-		panel.add(innerPanel);
+		spritePanel = new JPanel();
+		spritePanel.setBorder(BorderFactory.createTitledBorder("Background"));
+		spritePanel.setLayout(new BoxLayout(spritePanel, BoxLayout.Y_AXIS));
+		generateWeightedComponents(spritePanel, tile.bg);
+		panel.add(spritePanel);
 	}
 }

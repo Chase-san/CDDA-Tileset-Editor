@@ -23,6 +23,7 @@
 package org.csdgn.cddatse;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 
@@ -37,6 +38,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.RepaintManager;
 
 import org.csdgn.maru.swing.ArrayListModel;
 import org.csdgn.maru.swing.ImageListCellRenderer;
@@ -49,6 +51,7 @@ public class SpriteDialog extends JDialog {
 	private JList<BufferedImage> spriteList;
 
 	public SpriteDialog(Window win, MainPanel main, int spriteId) {
+		super(win);
 		this.main = main;
 		this.spriteId = spriteId;
 		
@@ -58,7 +61,6 @@ public class SpriteDialog extends JDialog {
 		setContentPane(createContentPane());
 		setSize(480, 320);
 		setLocationRelativeTo(win);
-		
 	}
 
 	private JPanel createBottomPanel() {
@@ -99,6 +101,7 @@ public class SpriteDialog extends JDialog {
 		spriteList.setVisibleRowCount(0);
 		spriteList.setCellRenderer(new ImageListCellRenderer());
 		spriteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		spriteList.setSelectionBackground(Color.MAGENTA);
 		spriteList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		spriteList.addListSelectionListener(e -> {
 			int id = spriteList.getSelectedIndex();
@@ -110,10 +113,8 @@ public class SpriteDialog extends JDialog {
 		JScrollPane spriteScrollPane = new JScrollPane(spriteList);
 		panel.add(spriteScrollPane, BorderLayout.CENTER);
 		updateList();
-		int index = main.tileset.getLocalIdForGlobalId(oldIndex);
-		spriteList.setSelectedIndex(index);
-		
 		spriteId = oldIndex;
+		selectSpriteByGlobalIndex(spriteId);
 
 		panel.add(createBottomPanel(), BorderLayout.SOUTH);
 
@@ -146,6 +147,11 @@ public class SpriteDialog extends JDialog {
 		return panel;
 	}
 
+	private void selectSpriteByGlobalIndex(int spriteIndex) {
+		int index = main.tileset.getLocalIdForGlobalId(spriteIndex);
+		spriteList.setSelectedIndex(index);
+	}
+
 	public int getSpriteId() {
 		return spriteId;
 	}
@@ -157,5 +163,11 @@ public class SpriteDialog extends JDialog {
 		spriteList.setModel(listModel);
 		spriteList.setSelectedIndex(0);
 		spriteList.clearSelection();
+	}
+
+	public static int selectSprite(Window win, MainPanel main, int spriteId) {
+		SpriteDialog diag = new SpriteDialog(win, main, spriteId);
+		diag.setVisible(true);
+		return diag.getSpriteId();
 	}
 }
