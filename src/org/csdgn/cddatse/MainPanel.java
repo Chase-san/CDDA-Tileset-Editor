@@ -49,8 +49,8 @@ public class MainPanel extends JPanel {
 	private JScrollPane centerPane;
 	private MainFrame frame;
 	private DefaultListModel<ImageTile> model;
-	private String sheet;
 	private String filter;
+	protected String sheet;
 	protected Tileset tileset;
 
 	public MainPanel(MainFrame frame, Tileset tileset) {

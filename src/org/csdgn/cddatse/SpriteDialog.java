@@ -38,7 +38,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.RepaintManager;
 
 import org.csdgn.maru.swing.ArrayListModel;
 import org.csdgn.maru.swing.ImageListCellRenderer;
@@ -54,7 +53,8 @@ public class SpriteDialog extends JDialog {
 		super(win);
 		this.main = main;
 		this.spriteId = spriteId;
-		
+		this.sheet = main.tileset.getSheetNameForGlobalId(spriteId);
+
 		setModal(true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -135,13 +135,12 @@ public class SpriteDialog extends JDialog {
 			if (!name.contains("fallback")) {
 				box.addItem(name);
 			}
-
 		}
+		box.setSelectedItem(sheet);
 		box.addActionListener(e -> {
 			sheet = (String) box.getSelectedItem();
 			updateList();
 		});
-		sheet = (String) box.getSelectedItem();
 		panel.add(box);
 
 		return panel;

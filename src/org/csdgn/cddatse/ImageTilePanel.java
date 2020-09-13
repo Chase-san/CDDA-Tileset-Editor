@@ -25,7 +25,6 @@ package org.csdgn.cddatse;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.util.Set;
@@ -177,7 +176,6 @@ public class ImageTilePanel extends JPanel {
 
 	private JPanel createBodyPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
-
 		boolean weighted = isWeighted();
 		cboxWeighted = new JCheckBox("Use weighted layout?");
 		cboxWeighted.setSelected(weighted);
@@ -220,7 +218,7 @@ public class ImageTilePanel extends JPanel {
 					panel.invalidate();
 					panel.revalidate();
 
-					set.ids.remove((Integer)id);
+					set.ids.remove((Integer) id);
 
 					if (set.ids.size() == 0) {
 						comp.remove(set);
@@ -238,6 +236,14 @@ public class ImageTilePanel extends JPanel {
 				});
 			}
 		}
+		// add "ADD button"
+		JButton btnAdd = new JButton("Add");
+		btnAdd.addActionListener(e -> {
+			SpriteSet set = new SpriteSet(main.tileset.getGlobalIdForLocalId(main.sheet, 0));
+			comp.add(set);
+			refreshSpritePanels();
+		});
+		panel.add(btnAdd);
 	}
 
 	private void generateUnweightedPanels(JPanel panel) {

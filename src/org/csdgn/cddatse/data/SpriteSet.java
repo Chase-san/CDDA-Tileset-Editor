@@ -31,14 +31,17 @@ public class SpriteSet {
 	public ArraySet<Integer> ids;
 	public Integer weight;
 
-	public SpriteSet() {
-		ids = new ArraySet<Integer>();
-		weight = null;
+	public SpriteSet(int ... ids) {
+		this.ids = new ArraySet<Integer>();
+		this.weight = null;
+		for(int id : ids) {
+			this.ids.add(id);
+		}
 	}
 
 	public SpriteSet(JsonElement ele) {
-		ids = new ArraySet<Integer>();
-		weight = null;
+		this.ids = new ArraySet<Integer>();
+		this.weight = null;
 		setFromJson(ele);
 	}
 	
