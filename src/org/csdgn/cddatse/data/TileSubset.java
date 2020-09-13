@@ -26,6 +26,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -39,10 +41,6 @@ public class TileSubset {
 	public int height;
 	public int offsetX;
 	public int offsetY;
-	/**
-	 * TODO "transparency": { "R": 0, "G": 0, "B": 0 },
-	 */
-
 	public ArrayList<BufferedImage> sprites;
 	public List<FallbackTile> fallback;
 	public List<ImageTile> tiles;
@@ -188,5 +186,21 @@ public class TileSubset {
 			return null;
 		}
 		return sprites.get(index);
+	}
+
+	public void sortImageTiles() {
+		HashMap<String, ImageTile> ref = new HashMap<String, ImageTile>();
+		List<String> list = new ArrayList<String>();
+		for(ImageTile tile : tiles) {
+			tile.sortIds();
+			String lid = tile.id.iterator().next();
+			ref.put(lid, tile);
+			list.add(lid);
+		}
+		Collections.sort(list);
+		tiles.clear();
+		for(String id : list) {
+			tiles.add(ref.get(id));
+		}
 	}
 }

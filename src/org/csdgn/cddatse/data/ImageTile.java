@@ -23,6 +23,7 @@
 package org.csdgn.cddatse.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -113,6 +114,14 @@ public class ImageTile {
 			}
 			obj.add("additional_tiles", array);
 		}
+	}
+
+	protected void sortIds() {
+		List<String> list = new ArrayList<String>();
+		list.addAll(id);
+		Collections.sort(list);
+		id.clear();
+		id.addAll(list);
 	}
 
 	public String toString() {

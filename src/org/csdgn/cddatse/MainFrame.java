@@ -126,15 +126,6 @@ public class MainFrame extends JFrame {
 
 		menu.addSeparator();
 
-		item = new JMenuItem("Options");
-		item.setMnemonic(KeyEvent.VK_P);
-		item.addActionListener((e) -> {
-			showOptionsDialog();
-		});
-		menu.add(item);
-
-		menu.addSeparator();
-
 		item = new JMenuItem("Exit");
 		item.setMnemonic(KeyEvent.VK_X);
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_DOWN_MASK));
@@ -146,10 +137,38 @@ public class MainFrame extends JFrame {
 		return menu;
 	}
 
+	private JMenu createEditMenu() {
+		JMenu menu = new JMenu("Edit");
+		menu.setMnemonic(KeyEvent.VK_E);
+
+		JMenuItem item;
+		
+		item = new JMenuItem("Sort");
+		item.setMnemonic(KeyEvent.VK_S);
+		item.setEnabled(false);
+		item.addActionListener((e) -> {
+			sortSheet();
+		});
+		disabledControls.add(item);
+		menu.add(item);
+
+		menu.addSeparator();
+
+		item = new JMenuItem("Options");
+		item.setMnemonic(KeyEvent.VK_P);
+		item.addActionListener((e) -> {
+			showOptionsDialog();
+		});
+		menu.add(item);
+
+		return menu;
+	}
+
 	private JMenuBar createMenuBar() {
 		JMenuBar menu = new JMenuBar();
 
 		menu.add(createFileMenu());
+		menu.add(createEditMenu());
 
 		return menu;
 	}
@@ -205,6 +224,11 @@ public class MainFrame extends JFrame {
 		for (JComponent comp : disabledControls) {
 			comp.setEnabled(enable);
 		}
+	}
+
+	private void sortSheet() {
+		MainPanel mp = (MainPanel)getContentPane();
+		mp.sortCurrentSheet();
 	}
 	
 	private void closeFile() {

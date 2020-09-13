@@ -39,6 +39,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 import org.csdgn.cddatse.data.ImageTile;
+import org.csdgn.cddatse.data.TileSubset;
 import org.csdgn.cddatse.data.Tileset;
 import org.csdgn.maru.swing.MultilineCellRenderer;
 
@@ -170,6 +171,12 @@ public class MainPanel extends JPanel {
 		centerPane.setViewportView(panel);
 		centerPane.invalidate();
 		centerPane.revalidate();
+	}
+
+	protected void sortCurrentSheet() {
+		TileSubset subset = tileset.subsets.get(sheet);
+		subset.sortImageTiles();
+		updateList();
 	}
 
 	private void updateList() {

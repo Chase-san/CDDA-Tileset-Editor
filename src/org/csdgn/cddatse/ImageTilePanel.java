@@ -73,7 +73,6 @@ public class ImageTilePanel extends JPanel {
 	}
 
 	private MainPanel main;
-
 	private ImageTile tile;
 
 	public ImageTilePanel(MainPanel main, ImageTile tile) {
